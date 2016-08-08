@@ -21,17 +21,22 @@ var (
 )
 
 /**
+ * 公共方法，初始化mongo
+ */
+func initMongoDB() error {
+	if mgoSession != nil {
+		mgoSession.Close()
+	}
+
+	var err error
+	mgoSession, err = mgo.Dial(MONGO_URL)
+	return err
+}
+
+/**
  * 公共方法，获取session，如果存在则拷贝一份
  */
 func getMongoSession() *mgo.Session {
-	if mgoSession == nil {
-		var err error
-		mgoSession, err = mgo.Dial(MONGO_URL)
-		if err != nil {
-			panic(err)
-		}
-	}
-
 	//最大连接池默认为4096
 	return mgoSession.Clone()
 }

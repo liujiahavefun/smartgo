@@ -26,6 +26,13 @@ func main() {
 
 	flag.Parse()
 
+	//初始化mongo
+	err := initMongoDB()
+	if err != nil {
+		fmt.Fprint(os.Stderr, "initialize mongo DB failed: ", err, "\n")
+		os.Exit(1)
+	}
+
 	/*
 	   这里指定传输时序列化的协议。
 	   TBinaryProtocol 二进制格式  thrift.NewTBinaryProtocolFactoryDefault()
