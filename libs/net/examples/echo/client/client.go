@@ -37,7 +37,7 @@ func HandlePacket(conn net.Connection, packet *pool.Buffer) (net.HandlerProc, bo
 func main() {
 	flag.Parse()
 
-	tcpConnection := net.NewClientConnection(0, "127.0.0.1:9100", false, HandlePacket)
+	tcpConnection := net.NewClientConnection(0, "123.56.88.196:9100", false, HandlePacket)
 
 	tcpConnection.SetOnConnectCallback(func(client net.Connection) bool {
 		glog.Errorf("On connect")

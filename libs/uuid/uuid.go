@@ -18,6 +18,10 @@ import (
 	"time"
 )
 
+/**
+ * 128位UUID生成算法，可以参考http://www.tuicool.com/articles/MNrYVri
+ */
+
 // UUID layout variants.
 const (
 	VariantNCS = iota
