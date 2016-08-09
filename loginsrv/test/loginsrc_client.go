@@ -27,13 +27,19 @@ func Usage() {
 func main() {
 	flag.Usage = Usage
 
-	protocol := flag.String("P", "binary", "Specify the protocol (binary, compact, json, simplejson)")
-	framed := flag.Bool("framed", false, "Use framed transport")
-	buffered := flag.Bool("buffered", false, "Use buffered transport")
+	protocol := flag.String("protocol", "binary", "Specify the protocol (binary, compact, json, simplejson)")
+	framed := flag.Bool("framed", true, "Use framed transport")
+	buffered := flag.Bool("buffered", true, "Use buffered transport")
 	addr := flag.String("addr", LOGINSRV_RPC_ADDR, "Address to listen to")
 	secure := flag.Bool("secure", false, "Use tls secure transport")
 
 	flag.Parse()
+
+	fmt.Printf("protocol : %v \n", *protocol)
+	fmt.Printf("framed : %v \n", *framed)
+	fmt.Printf("buffered : %v \n", *buffered)
+	fmt.Printf("addr : %v \n", *addr)
+	fmt.Printf("secure : %v \n", *secure)
 
 	/*
 	   这里指定传输时序列化的协议。

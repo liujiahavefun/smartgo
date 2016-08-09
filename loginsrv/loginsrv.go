@@ -26,6 +26,12 @@ func main() {
 
 	flag.Parse()
 
+	fmt.Printf("protocol : %v \n", *protocol)
+	fmt.Printf("framed : %v \n", *framed)
+	fmt.Printf("buffered : %v \n", *buffered)
+	fmt.Printf("addr : %v \n", *addr)
+	fmt.Printf("secure : %v \n", *secure)
+
 	//初始化mongo
 	err := initMongoDB()
 	if err != nil {
