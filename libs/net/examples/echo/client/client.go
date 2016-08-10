@@ -37,7 +37,12 @@ func HandlePacket(conn net.Connection, packet *pool.Buffer) (net.HandlerProc, bo
 func main() {
 	flag.Parse()
 
-	tcpConnection := net.NewClientConnection(0, "123.56.88.196:9100", false, HandlePacket)
+	addr := "123.56.88.196:9100"
+	tcpConnection, err := net.NewClientConnection(0, addr, false, HandlePacket)
+	if err != nil {
+		glog.Errorln("failed to dial to addr: ", addr)
+		return
+	}
 
 	tcpConnection.SetOnConnectCallback(func(client net.Connection) bool {
 		glog.Errorf("On connect")

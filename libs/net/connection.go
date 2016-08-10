@@ -378,10 +378,10 @@ func NewTLSClientConnection(netid int64, address string, reconnectable bool, con
 	}
 }
 
-func NewClientConnection(netid int64, address string, reconnectable bool, onPacket onPacketRecvFunc) Connection {
+func NewClientConnection(netid int64, address string, reconnectable bool, onPacket onPacketRecvFunc) (Connection, error) {
 	c, err := net.Dial("tcp", address)
 	if err != nil {
-		glog.Fatalln("NewClientConnection", err)
+		return nil, err
 	}
 	return &ClientConnection{
 		netid:           netid,
@@ -401,7 +401,7 @@ func NewClientConnection(netid int64, address string, reconnectable bool, onPack
 		packetRecvChan:  make(chan *pool.Buffer, 1024),
 		closeConnChan:   make(chan struct{}),
 		onPacket:        onPacket,
-	}
+	}, nil
 }
 
 func (client *ClientConnection) SetNetId(netid int64) {
