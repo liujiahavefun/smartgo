@@ -21,7 +21,8 @@ func (p *LoginServiceHandler) LoginByPasswd(username string, passwd string, from
 	if passwd == userObj.Passwd {
 		return "token", nil
 	}
-	return "", nil
+
+	return "", ErrorPasswordInvalid
 }
 
 func (p *LoginServiceHandler) LoginByToken(uid string, token string, fromtype string, params map[string]string) (r string, err error) {

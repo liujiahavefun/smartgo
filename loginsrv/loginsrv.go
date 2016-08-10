@@ -124,6 +124,6 @@ func runRpcServer(transportFactory thrift.TTransportFactory, protocolFactory thr
 	*/
 	server := thrift.NewTSimpleServer4(processor, transport, transportFactory, protocolFactory)
 
-	fmt.Println("Starting the login server on ", addr)
+	fmt.Println("Starting the login server on: ", addr)
 	return server.Serve()
 }
