@@ -3,6 +3,7 @@ package main
 import (
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"time"
 )
 
 type User struct {
@@ -29,7 +30,12 @@ func initMongoDB() error {
 	}
 
 	var err error
-	mgoSession, err = mgo.Dial(MONGO_URL)
+	maxWait := time.Duration(5 * time.Second)
+	mgoSession, err = mgo.DialWithTimeout(MONGO_URL, maxWait)
+	if err == nil {
+		mgoSession.SetMode(mgo.Monotonic, true)
+		mgoSession.SetPoolLimit(1024)
+	}
 	return err
 }
 
@@ -68,7 +74,7 @@ func GetPersonById(id string) (*User, error) {
 /**
  * 获取一条记录通过name
  */
-func GetPersonByName(name string) (*User, error) {
+func getPersonByName(name string) (*User, error) {
 	userObj := new(User)
 	query := func(c *mgo.Collection) error {
 		return c.Find(bson.M{"name": name}).One(&userObj)
@@ -81,7 +87,7 @@ func GetPersonByName(name string) (*User, error) {
 /**
  * 获取一条记录通过uid
  */
-func GetPersonByUid(uid string) (*User, error) {
+func getPersonByUid(uid string) (*User, error) {
 	userObj := new(User)
 	query := func(c *mgo.Collection) error {
 		return c.Find(bson.M{"uid": uid}).One(&userObj)

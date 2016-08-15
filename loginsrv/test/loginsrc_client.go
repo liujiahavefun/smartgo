@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"git.apache.org/thrift.git/lib/go/thrift"
 	"os"
+	"smartgo/libs/uuid"
 	"smartgo/loginsrv/proto/thrift/gen-go/login/rpc"
 	"time"
 )
@@ -25,6 +26,11 @@ func Usage() {
 }
 
 func main() {
+	for i := 0; i < 10; i++ {
+		fmt.Println(uuid.CreateToken())
+	}
+	return
+
 	flag.Usage = Usage
 
 	protocol := flag.String("protocol", "binary", "Specify the protocol (binary, compact, json, simplejson)")
@@ -95,7 +101,7 @@ func main() {
 }
 
 func handleClient(client *rpc.LoginServiceClient) (err error) {
-	token, err := client.LoginByPasswd("liujia", "123456", "pc", nil)
+	token, err := client.LoginByPasswd("liujia", "123456111", "pc", nil)
 	fmt.Println("token: ", token, " err: ", err)
 	return err
 }
