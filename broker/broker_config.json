@@ -1,0 +1,10 @@
+{
+    "TransportProtocol"  : "tcp",
+    "ListenOn"           : "0.0.0.0:9101",
+    "LogFile"            : "broker.log",
+    "RouterServerList"      : [
+        "127.0.0.1:19000",
+        "127.0.0.1:19001"
+    ],
+    "RouterServerNum"       : 2
+}
