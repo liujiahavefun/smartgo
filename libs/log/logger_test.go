@@ -26,22 +26,22 @@ func refute(t *testing.T, a interface{}, b interface{}) {
 }
 
 func Test_GetLogFileAndNextTime(t *testing.T) {
-	fn, next, err := logger.GetFileNameAndNextTime("perquarter", "yunlaiwu")
+	fn, next, err := logger.GetFileNameAndNextTime("perquarter", "smartgo")
 	t.Log(fn, next, err)
 
-	fn, next, err = logger.GetFileNameAndNextTime("halfhour", "yunlaiwu")
+	fn, next, err = logger.GetFileNameAndNextTime("halfhour", "smartgo")
 	t.Log(fn, next, err)
 
-	fn, next, err = logger.GetFileNameAndNextTime("perhour", "yunlaiwu")
+	fn, next, err = logger.GetFileNameAndNextTime("perhour", "smartgo")
 	t.Log(fn, next, err)
 
-	fn, next, err = logger.GetFileNameAndNextTime("perday", "yunlaiwu")
+	fn, next, err = logger.GetFileNameAndNextTime("perday", "smartgo")
 	t.Log(fn, next, err)
 
-	fn, next, err = logger.GetFileNameAndNextTime("laoliu", "yunlaiwu")
+	fn, next, err = logger.GetFileNameAndNextTime("laoliu", "smartgo")
 	t.Log(fn, next, err)
 
-	fn, next, err = logger.GetFileNameAndNextTime("", "yunlaiwu")
+	fn, next, err = logger.GetFileNameAndNextTime("", "smartgo")
 	t.Log(fn, next, err)
 
 	/*

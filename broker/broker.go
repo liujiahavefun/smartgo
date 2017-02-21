@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/golang/glog"
-	"smartgo/libs/net"
-	"smartgo/libs/pool"
+	//"smartgo/libs/net"
+	//"smartgo/libs/pool"
 )
 
 //liujia: 编译命令 go build -ldflags "-X main.BUILD_VERSION=0.0.1 -X main.BUILD_TIME=`date +%Y年%m月%d日-%H:%M:%S`"
@@ -18,7 +18,13 @@ var (
 var configFile = flag.String("config_file", "broker_config.json", "input broker config file name")
 
 func version() {
-	fmt.Printf("broker version %s built on %s,  Copyright(c) 2016 liujia@yunlaiwu.com \n", BUILD_VERSION, BUILD_TIME)
+	if len(BUILD_VERSION) == 0 {
+		BUILD_VERSION = "unknown"
+	}
+	if len(BUILD_TIME) == 0 {
+		BUILD_TIME = "unknown"
+	}
+	fmt.Printf("broker version %s built on %s,  Copyright(c) 2016 liujia@smartgo.com \n", BUILD_VERSION, BUILD_TIME)
 }
 
 func init() {
