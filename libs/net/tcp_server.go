@@ -12,13 +12,14 @@ import (
 )
 
 type TCPServer struct {
-	isRunning     *AtomicBoolean
-	connections   *ConcurrentMap
-	timingWheel   *TimingWheel
-	workerPool    *WorkerPool
+	address       string         //在哪个address:port上listen
+	closeServChan chan struct{}  //关闭时的通知channel
+	isRunning     *AtomicBoolean //running标志
 	finish        *sync.WaitGroup
-	address       string
-	closeServChan chan struct{}
+
+	connections *ConcurrentMap //保存所有的conn，key是一个全局的id(单增数字)，value是conn
+	timingWheel *TimingWheel
+	workerPool  *WorkerPool
 
 	onConnect onConnectFunc
 	onMessage onMessageFunc
@@ -26,62 +27,52 @@ type TCPServer struct {
 	onError   onErrorFunc
 	onPacket  onPacketRecvFunc
 
-	duration   time.Duration
-	onSchedule onScheduleFunc
+	duration   time.Duration  //配置定时任务的时间间隔
+	onSchedule onScheduleFunc //配置的简单的定时任务，定时跑在每个连接上
 }
 
 func NewTCPServer(addr string) Server {
 	return &TCPServer{
-		isRunning:     NewAtomicBoolean(true),
+		address:       addr,
+		isRunning:     NewAtomicBoolean(false),
+		finish:        &sync.WaitGroup{},
+		closeServChan: make(chan struct{}),
 		connections:   NewConcurrentMap(),
 		timingWheel:   NewTimingWheel(),
 		workerPool:    NewWorkerPool(WORKERS),
-		finish:        &sync.WaitGroup{},
-		address:       addr,
-		closeServChan: make(chan struct{}),
 	}
-}
-
-func (server *TCPServer) IsRunning() bool {
-	return server.isRunning.Get()
-}
-
-func (server *TCPServer) GetAllConnections() *ConcurrentMap {
-	return server.connections
-}
-
-func (server *TCPServer) GetTimingWheel() *TimingWheel {
-	return server.timingWheel
-}
-
-func (server *TCPServer) GetWorkerPool() *WorkerPool {
-	return server.workerPool
-}
-
-func (server *TCPServer) GetServerAddress() string {
-	return server.address
 }
 
 func (server *TCPServer) Start() {
-	server.finish.Add(1)
-	go server.timeOutLoop()
-
+	// initialize tcp listener
 	listener, err := net.Listen("tcp", server.address)
 	if err != nil {
 		glog.Fatalln(err)
+		return
 	}
+
 	defer listener.Close()
 
+	// start goroutine which is for timeout event dispatch
+	server.finish.Add(1)
+	go server.timeOutLoop()
+
+	// mark server is running
+	server.isRunning.Set(true)
+
+	// start loop to accept request
 	for server.IsRunning() {
+		//liujia: TODO: Accept() may be hang if no new conn comes, make it timeout-able
 		conn, err := listener.Accept()
 		if err != nil {
 			glog.Errorln("Accept error - ", err)
 			continue
 		}
 
-		conn = tlsWrapper(conn) // wrap as a tls connection if configured
+		// wrap as a tls connection if configured
+		conn = tlsWrapper(conn)
 
-		//config tcp conn
+		// config tcp conn
 		tc, ok := conn.(*net.TCPConn)
 		if ok {
 			tc.SetKeepAlive(true)
@@ -95,6 +86,7 @@ func (server *TCPServer) Start() {
 		netid := netIdentifier.GetAndIncrement()
 		tcpConn := NewServerConnection(netid, server, conn)
 		tcpConn.SetName(tcpConn.GetRemoteAddress().String())
+
 		if server.connections.Size() < MAX_CONNECTIONS {
 			duration, onSchedule := server.GetOnScheduleCallback()
 			if onSchedule != nil {
@@ -123,14 +115,18 @@ func (server *TCPServer) Start() {
 func (server *TCPServer) Close() {
 	if server.isRunning.CompareAndSet(true, false) {
 		glog.Infoln("Server is to close --------- to close all client connections")
+
 		for v := range server.GetAllConnections().IterValues() {
 			c := v.(Connection)
 			c.Close()
 		}
+
 		close(server.closeServChan)
+
 		glog.Infoln("Server is to close --------- wait all sub routines to finish")
 		server.finish.Wait()
 		server.GetTimingWheel().Stop()
+
 		glog.Infoln("Server is to close --------- final close, exit!")
 		os.Exit(0)
 	}
@@ -151,15 +147,37 @@ func (server *TCPServer) timeOutLoop() {
 		case timeout := <-server.GetTimingWheel().GetTimeOutChannel():
 			netid := timeout.ExtraData.(int64)
 			if conn, ok := server.connections.Get(netid); ok {
-				tcpConn := conn.(Connection)
-				if !tcpConn.IsClosed() {
-					tcpConn.GetTimeOutChannel() <- timeout
+				tcpConn, ok := conn.(Connection)
+				if ok {
+					if !tcpConn.IsClosed() {
+						tcpConn.GetTimeOutChannel() <- timeout
+					}
 				}
 			} else {
-				glog.Warningf("Invalid client %d\n", netid)
+				glog.Warningf("Invalid client net id %d\n", netid)
 			}
 		}
 	}
+}
+
+func (server *TCPServer) IsRunning() bool {
+	return server.isRunning.Get()
+}
+
+func (server *TCPServer) GetAllConnections() *ConcurrentMap {
+	return server.connections
+}
+
+func (server *TCPServer) GetTimingWheel() *TimingWheel {
+	return server.timingWheel
+}
+
+func (server *TCPServer) GetWorkerPool() *WorkerPool {
+	return server.workerPool
+}
+
+func (server *TCPServer) GetServerAddress() string {
+	return server.address
 }
 
 func (server *TCPServer) GetTimeOutChannel() chan *OnTimeOut {

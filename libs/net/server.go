@@ -8,7 +8,7 @@ import (
 )
 
 /*
-* liujia: return tls conn if tlsWrapper is configured, return origin conn otherwise
+* liujia: return tls conn (其实就验证key/cert) if tlsWrapper is configured, return origin conn otherwise
  */
 func init() {
 	tlsWrapper = func(conn net.Conn) net.Conn {
@@ -25,7 +25,7 @@ func setTLSWrapper(wrapper func(conn net.Conn) net.Conn) {
 }
 
 /*
-* server interface for TCP/TLS_TCP server
+* server interface for TCP/TLS-TCP server
  */
 type Server interface {
 	Start()

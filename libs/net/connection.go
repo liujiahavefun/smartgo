@@ -2,12 +2,14 @@ package net
 
 import (
 	"crypto/tls"
-	"github.com/golang/glog"
 	"net"
-	"smartgo/libs/pool"
-	. "smartgo/libs/utils"
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
+
+	"smartgo/libs/pool"
+	. "smartgo/libs/utils"
 )
 
 type Connection interface {

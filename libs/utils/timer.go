@@ -2,9 +2,10 @@ package utils
 
 import (
 	"container/heap"
-	"github.com/golang/glog"
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 func init() {

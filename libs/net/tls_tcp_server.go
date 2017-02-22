@@ -7,8 +7,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-
-	. "smartgo/libs/utils"
+	//. "smartgo/libs/utils"
 )
 
 func LoadTLSConfig(certFile, keyFile string, isSkipVerify bool) (tls.Config, error) {
@@ -71,6 +70,7 @@ func NewTLSTCPServer(addr, cert, key string) Server {
 	return server
 }
 
+/*
 func (server *TLSTCPServer) IsRunning() bool {
 	return server.TCPServer.IsRunning()
 }
@@ -146,3 +146,4 @@ func (server *TLSTCPServer) SetOnPacketRecvCallback(callback onPacketRecvFunc) {
 func (server *TLSTCPServer) GetOnPacketRecvCallback() onPacketRecvFunc {
 	return server.onPacket
 }
+*/
