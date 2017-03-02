@@ -8,7 +8,7 @@ import (
 )
 
 /*
-* liujia: return tls conn (其实就验证key/cert) if tlsWrapper is configured, return origin conn otherwise
+* liujia: 如果设置了tlsWrapper，就将普通的tcp连接转为TSL连接 (其实就验证key/cert) ，默认啥都不转
  */
 func init() {
 	tlsWrapper = func(conn net.Conn) net.Conn {
@@ -40,18 +40,19 @@ type Server interface {
 	SetOnConnectCallback(func(Connection) bool)
 	GetOnConnectCallback() onConnectFunc
 
-	//SetOnMessageCallback(func(Message, Connection))
-	//GetOnMessageCallback() onMessageFunc
-
 	SetOnCloseCallback(func(Connection))
 	GetOnCloseCallback() onCloseFunc
 
 	SetOnErrorCallback(func())
 	GetOnErrorCallback() onErrorFunc
 
+	SetOnPacketRecvCallback(callback onPacketRecvFunc)
+	GetOnPacketRecvCallback() onPacketRecvFunc
+
+	//下面这俩应该没大用
 	SetOnScheduleCallback(time.Duration, func(time.Time, interface{}))
 	GetOnScheduleCallback() (time.Duration, onScheduleFunc)
 
-	SetOnPacketRecvCallback(callback onPacketRecvFunc)
-	GetOnPacketRecvCallback() onPacketRecvFunc
+	//SetOnMessageCallback(func(Message, Connection))
+	//GetOnMessageCallback() onMessageFunc
 }
