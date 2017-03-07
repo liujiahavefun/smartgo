@@ -13,7 +13,7 @@ import (
 
 /*
 * server interface for TCP/TLS-TCP server
- */
+*/
 type Connection interface {
 	Start()
 	Close()
@@ -88,6 +88,9 @@ type ClientSideConnection interface {
 	// Reconnectable
 }
 
+/*
+* 向conn发送编码后的message，如果当前缓冲区满，返回ErrorWouldBlock
+*/
 func asyncWrite(conn Connection, message Message) error {
 	if conn.IsClosed() {
 		return ErrorConnClosed
@@ -107,7 +110,10 @@ func asyncWrite(conn Connection, message Message) error {
 	}
 }
 
-//check if the connection is closed in NON-BLOCK way
+/*
+* 非阻塞的方式检查conn是否closed
+* 因为我们关闭的方式是向CloseChannel写入一个值，如何没写，则select会匹配default
+*/
 func isClosed(conn Connection) bool {
 	if conn.IsClosed() {
 		return true
@@ -121,16 +127,18 @@ func isClosed(conn Connection) bool {
 	}
 }
 
-/* readLoop() blocking read from connection, deserialize bytes into message,
-then find corresponding handler, put it into channel */
+/*
+* 死循环的读，从connection阻塞读，并且反序列化为message，最后找到对应的handler，并发送过去处理
+*/
 func readLoop(conn Connection, finish *sync.WaitGroup) {
 	defer func() {
 		if p := recover(); p != nil {
 			glog.Errorf("readLoop panics: %v\n", p)
 		}
+
 		finish.Done()
 		conn.Close()
-		glog.Errorf("readLoop exit")
+		glog.Infof("readLoop exit")
 	}()
 
 	for {
@@ -147,9 +155,12 @@ func readLoop(conn Connection, finish *sync.WaitGroup) {
 			return
 		}
 
+		// 从conn中阻塞读并解码，有些错误可以忽略，有些直接返回吧
 		//TODO: 某些错误可以忽略，比如包太大之类的
 		buf, err := conn.GetMessageCodec().Decode(conn)
 		if err != nil {
+			//错误了，free buf
+			buf.Free()
 			/*
 				if _, ok := err.(*net.OpError); ok {
 					continue
@@ -167,8 +178,6 @@ func readLoop(conn Connection, finish *sync.WaitGroup) {
 				continue
 			}
 
-			buf.Free()
-
 			glog.Errorf("readLoop Error decoding message - %s\n", err)
 			if _, ok := err.(ErrorUndefined); ok {
 				conn.SetHeartBeat(time.Now().UnixNano())
@@ -177,9 +186,10 @@ func readLoop(conn Connection, finish *sync.WaitGroup) {
 			return
 		}
 
-		// update heart beat timestamp
+		// 更新心跳时间
 		conn.SetHeartBeat(time.Now().UnixNano())
 
+		// 找到handler并发过去处理
 		if !conn.IsClosed() {
 			glog.Errorf("delivery msg to packet recv channel\n")
 			conn.GetPacketReceiveChannel() <- buf
@@ -206,13 +216,16 @@ func readLoop(conn Connection, finish *sync.WaitGroup) {
 	}
 }
 
-/* writeLoop() receive message from channel, serialize it into bytes,
-then blocking write into connection */
+/*
+* 死循环的写，从send channel阻塞拿到待发送message，序列化为[]byte，然后阻塞写入到conn
+*/
 func writeLoop(conn Connection, finish *sync.WaitGroup) {
 	defer func() {
 		if p := recover(); p != nil {
 			glog.Errorf("writeLoop panics: %v", p)
 		}
+
+		// 哥的作风一向是能搂住多少算多少
 		for packet := range conn.GetMessageSendChannel() {
 			if packet != nil {
 				if _, err := conn.GetRawConn().Write(packet); err != nil {
@@ -220,9 +233,10 @@ func writeLoop(conn Connection, finish *sync.WaitGroup) {
 				}
 			}
 		}
+
 		finish.Done()
 		conn.Close()
-		glog.Errorf("writeLoop exit")
+		glog.Infof("writeLoop exit")
 	}()
 
 	for {
@@ -233,6 +247,7 @@ func writeLoop(conn Connection, finish *sync.WaitGroup) {
 
 		case packet := <-conn.GetMessageSendChannel():
 			if packet != nil {
+				// TODO: 这里要处理一下需要多次发送的情况，如果要发送100字节，存在一次只发送一个字节的情况。。。。
 				if _, err := conn.GetRawConn().Write(packet); err != nil {
 					glog.Errorf("writeLoop Error writing data - %s\n", err)
 					return
@@ -242,12 +257,15 @@ func writeLoop(conn Connection, finish *sync.WaitGroup) {
 	}
 }
 
-// handleServerLoop() - put handler or timeout callback into worker go-routines
+/*
+* server connection的处理函数，死循环，处理收到的包和处理时间事件
+*/
 func handleServerLoop(conn Connection, finish *sync.WaitGroup) {
 	defer func() {
 		if p := recover(); p != nil {
 			glog.Errorf("handleServerLoop panics: %v", p)
 		}
+
 		finish.Done()
 		conn.Close()
 		glog.Errorf("handleServerLoop exit")
@@ -276,6 +294,7 @@ func handleServerLoop(conn Connection, finish *sync.WaitGroup) {
 				if ok {
 					onPacket := serverConn.GetOnPacketRecvCallback()
 					if onPacket != nil {
+						//分发给workpoll中的线程执行
 						serverConn.GetOwner().workerPool.Put(conn.GetNetId(), func() {
 							defer func() {
 								if p := recover(); p != nil {
@@ -314,12 +333,16 @@ func handleServerLoop(conn Connection, finish *sync.WaitGroup) {
 	}
 }
 
-// handleClientLoop() - run handler or timeout callback in handleLoop() go-routine
+/*
+* client connection的处理函数，死循环，处理收到的包和处理时间事件
+* 与server端的区别就是不用发送到server的统一的workpoll里去，而是在当前线程执行就好了
+*/
 func handleClientLoop(conn Connection, finish *sync.WaitGroup) {
 	defer func() {
 		if p := recover(); p != nil {
 			glog.Errorf("handleClientLoop panics: %v", p)
 		}
+
 		finish.Done()
 		conn.Close()
 		glog.Errorf("handleClientLoop exit")
@@ -350,6 +373,7 @@ func handleClientLoop(conn Connection, finish *sync.WaitGroup) {
 									conn.Close()
 								}
 							}()
+
 							defer buf.Free()
 
 							handler, ok := onPacket(conn, buf)

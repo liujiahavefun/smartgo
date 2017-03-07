@@ -58,7 +58,7 @@ func (codec FixedLengthHeaderCodec) Decode(conn Connection) (buffer *pool.Buffer
 		return
 	}
 
-	glog.Errorf("recv msg: %v\n", buffer.Data)
+	glog.Infof("recv msg: %v\n", buffer.Data)
 	return
 }
 
