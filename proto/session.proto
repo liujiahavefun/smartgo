@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package session;
+
+//==========================================================
+//Session事件消息
+//==========================================================
+
+//一个连接被Accept
+message SessionAccepted
+{
+
+}
+
+//Accept发生错误
+message SessionAcceptFailed
+{
+	string Reason = 1;
+}
+
+//Session已经建立
+message SessionConnected
+{
+
+}
+
+//Session建立出现错误
+message SessionConnectFailed
+{
+	string Reason = 1;
+}
+
+//Session关闭，因为错误被关闭，就填eason好喽
+message SessionClosed
+{
+	string Reason = 1;
+}
+
+//Session有错误
+message SessionError
+{
+	string Reason = 1;
+}
