@@ -2,10 +2,19 @@ package socket
 
 import (
 	"fmt"
-
-	_ "smartgo/proto/sessevent"
 )
 
+func Init() {
+	fmt.Println("event Init()")
+	Event_SessionAccepted      = uint32(MessageMetaByName("sessevent.SessionAccepted").ID)
+	Event_SessionAcceptFailed  = uint32(MessageMetaByName("sessevent.SessionAcceptFailed").ID)
+	Event_SessionConnected     = uint32(MessageMetaByName("sessevent.SessionConnected").ID)
+	Event_SessionConnectFailed = uint32(MessageMetaByName("sessevent.SessionConnectFailed").ID)
+	Event_SessionClosed        = uint32(MessageMetaByName("sessevent.SessionClosed").ID)
+	Event_SessionError         = uint32(MessageMetaByName("sessevent.SessionError").ID)
+}
+
+/*
 var (
 	Event_SessionAccepted      = uint32(MessageMetaByName("session.SessionAccepted").ID)
 	Event_SessionAcceptFailed  = uint32(MessageMetaByName("session.SessionAcceptFailed").ID)
@@ -13,6 +22,16 @@ var (
 	Event_SessionConnectFailed = uint32(MessageMetaByName("session.SessionConnectFailed").ID)
 	Event_SessionClosed        = uint32(MessageMetaByName("session.SessionClosed").ID)
 	Event_SessionError         = uint32(MessageMetaByName("session.SessionError").ID)
+)
+*/
+
+var (
+	Event_SessionAccepted uint32
+	Event_SessionAcceptFailed uint32
+	Event_SessionConnected uint32
+	Event_SessionConnectFailed uint32
+	Event_SessionClosed uint32
+	Event_SessionError uint32
 )
 
 //会话事件
@@ -25,17 +44,17 @@ func (self SessionEvent) String() string {
 	return fmt.Sprintf("SessionEvent msgid: %d data: %v", self.MsgID, self.Data)
 }
 
-func NewSessionEvent(msgid uint32, s Session, data []byte) *SessionEvent {
+func NewSessionEvent(msgid uint32, sess Session, data []byte) *SessionEvent {
 	return &SessionEvent{
 		Packet: &Packet{MsgID: msgid, Data: data},
-		Ses:    s,
+		Ses:    sess,
 	}
 }
 
-func newSessionEvent(msgid uint32, s Session, msg interface{}) *SessionEvent {
+func newSessionEvent(msgid uint32, sess Session, msg interface{}) *SessionEvent {
 	pkt, _ := BuildPacket(msg)
 	return &SessionEvent{
 		Packet: pkt,
-		Ses:    s,
+		Ses:    sess,
 	}
 }

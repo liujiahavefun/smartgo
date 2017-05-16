@@ -74,7 +74,7 @@ func (self *TcpConnector) connect(address string) {
 		//去连接
 		conn, err := net.Dial("tcp", address)
 		if err != nil {
-			ev := newSessionEvent(Event_SessionError, nil, &session.SessionError{Reason:err.Error()})
+			ev := newSessionEvent(Event_SessionError, nil, &sessevent.SessionError{Reason:err.Error()})
 			self.evq.Post(self, ev)
 
 			if self.tryConnTimes <= DEFAULT_CONNECT_RETRY_TIMES {
@@ -87,7 +87,7 @@ func (self *TcpConnector) connect(address string) {
 
 			//没重连就退出
 			if self.autoReconnectSec == 0 {
-				self.evq.Post(self, newSessionEvent(Event_SessionConnectFailed, nil, &session.SessionConnectFailed{Reason: err.Error()}))
+				self.evq.Post(self, newSessionEvent(Event_SessionConnectFailed, nil, &sessevent.SessionConnectFailed{Reason: err.Error()}))
 				break
 			}
 
@@ -116,7 +116,7 @@ func (self *TcpConnector) connect(address string) {
 			self.sessionMgr.Remove(session)
 			self.closeSignal <- true
 
-			ev := newSessionEvent(Event_SessionClosed, session, &gamedef.SessionClosed{Reason: ""})
+			ev := newSessionEvent(Event_SessionClosed, session, &sessevent.SessionClosed{Reason: ""})
 
 			//post断开事件
 			self.evq.Post(self, ev)
@@ -176,7 +176,7 @@ func (self *TcpConnector) onSessionClosedFunc(ses Session) {
 	self.closeSignal <- true
 
 	//post断开事件
-	ev := newSessionEvent(Event_SessionClosed, ses, &session.SessionClosed{})
+	ev := newSessionEvent(Event_SessionClosed, ses, &sessevent.SessionClosed{})
 	self.evq.Post(self, ev)
 }
 

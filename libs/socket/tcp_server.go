@@ -54,11 +54,11 @@ func (self *TcpServer) Start(address string) Server {
 			if err != nil {
 				//TODO: onErrorFunc instead, 别随地胡逼抛事件
 				logErrorf("#accept failed(%s) %v", self.name, err.Error())
-				self.evq.Post(self, newSessionEvent(Event_SessionAcceptFailed, nil, &session.SessionAcceptFailed{Reason: err.Error()}))
+				self.evq.Post(self, newSessionEvent(Event_SessionAcceptFailed, nil, &sessevent.SessionAcceptFailed{Reason: err.Error()}))
 				break
 			}
 
-			self.evq.Post(self, newSessionEvent(Event_SessionAccepted, nil, &session.SessionAccepted{}))
+			self.evq.Post(self, newSessionEvent(Event_SessionAccepted, nil, &sessevent.SessionAccepted{}))
 
 			//处理连接进入独立线程, 防止accept无法响应
 			go func() {
@@ -104,11 +104,11 @@ func (self *TcpServer) onSessionConnectedFunc(sess Session) {
 func (self *TcpServer) onSessionClosedFunc(sess Session) {
 	//fmt.Println("liujia, tcp_server onSessionClosedFunc: ", session)
 	self.sessionMgr.Remove(sess)
-	ev := newSessionEvent(Event_SessionClosed, sess, &session.SessionClosed{Reason: ""})
+	ev := newSessionEvent(Event_SessionClosed, sess, &sessevent.SessionClosed{Reason: ""})
 	self.evq.Post(self, ev)
 
 	/*
-	ev := newSessionEvent(Event_SessionClosed, session, &gamedef.SessionClosed{Reason: err.Error()})
+	ev := newSessionEvent(Event_SessionClosed, session, &sessevent.SessionClosed{Reason: err.Error()})
 	msgLog("recv", session, ev.Packet)
 
 	//post断开事件
@@ -119,7 +119,7 @@ func (self *TcpServer) onSessionClosedFunc(sess Session) {
 func (self *TcpServer) onSessionErrorFunc(sess Session, err error) {
 	//fmt.Println("liujia, tcp_server onSessionErrorFunc: ", session, err)
 	//TODO: Event_SessionClosed to Event_SessionError
-	ev := newSessionEvent(Event_SessionError, sess, &session.SessionError{Reason: err.Error()})
+	ev := newSessionEvent(Event_SessionError, sess, &sessevent.SessionError{Reason: err.Error()})
 
 	//post断开事件
 	self.evq.Post(self, ev)

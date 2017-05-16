@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package session;
+package sessevent;
 
 //==========================================================
 //Session事件消息
