@@ -2,6 +2,8 @@ package utils
 
 import (
 	"net"
+    "os"
+    "runtime"
 )
 
 func GetMacAddress() string {
@@ -15,4 +17,10 @@ func GetMacAddress() string {
 	}
 
 	return "no_mac_hardware"
+}
+
+func printStack() {
+    var buf [4096]byte
+    n := runtime.Stack(buf[:], false)
+    os.Stderr.Write(buf[:n])
 }

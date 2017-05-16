@@ -3,9 +3,7 @@ package utils
 import (
 	"hash"
 	"hash/fnv"
-	"os"
 	"reflect"
-	"runtime"
 	"unsafe"
 )
 
@@ -21,7 +19,7 @@ func init() {
 	h = fnv.New32a()
 }
 
-func hashCode(k interface{}) (uint32, error) {
+func Hash(k interface{}) (uint32, error) {
 	var code uint32
 	var err error
 	h.Reset()
@@ -84,10 +82,4 @@ func IsNil(v interface{}) bool {
 	default:
 		return false
 	}
-}
-
-func printStack() {
-	var buf [4096]byte
-	n := runtime.Stack(buf[:], false)
-	os.Stderr.Write(buf[:n])
 }

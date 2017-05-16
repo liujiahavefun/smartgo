@@ -354,7 +354,7 @@ func (cm *ConcurrentMap) Size() int {
 }
 
 func (cm *ConcurrentMap) shardFor(k interface{}) (*syncMap, error) {
-	if code, err := hashCode(k); err != nil {
+	if code, err := Hash(k); err != nil {
 		return nil, err
 	} else {
 		return cm.shards[code&uint32(INITIAL_SHARD_SIZE-1)], nil
