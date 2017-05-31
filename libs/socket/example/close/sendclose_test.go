@@ -16,7 +16,14 @@ func runServer() {
     queue := socket.NewEventQueue()
     server := socket.NewTcpServer(queue).Start("127.0.0.1:7201")
 
+    socket.RegisterMessage(server, "sessevent.SessionConnected", func(content interface{}, ses socket.Session) {
+        fmt.Println("recv SessionConnected, from peer: ", ses.FromPeer().Name())
+        ses.FromPeer().SetName(ses.FromPeer().Name() + "_liujia")
+    })
+
     socket.RegisterMessage(server, "test.TestEchoACK", func(content interface{}, ses socket.Session) {
+        fmt.Println("recv TestEchoACK, from peer: ", ses.FromPeer().Name())
+
         msg := content.(*testproto.TestEchoACK)
         // 发包后关闭
         ses.Send(&testproto.TestEchoACK{

@@ -56,15 +56,11 @@ func (self *sessionBase) GetID() int64 {
 }
 
 func (self *sessionBase) FromPeer() Peer {
-	return self.myself
-}
-
-func (self *sessionBase) GetMyselfPeer() Peer {
-	return self.myself
-}
-
-func (self *sessionBase) GetOtherSidePeer() Peer {
 	return self.otherSide
+}
+
+func (self *sessionBase) SelfPeer() Peer {
+	return self.myself
 }
 
 func (self *sessionBase) Close() {

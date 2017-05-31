@@ -43,6 +43,7 @@ func (self *TcpServer) Start(address string) Server {
 		return self
 	}
 
+	self.SetName(address)
 	self.address = address
 	self.running = true
 	logInfof("#listen(%s) %s ", self.name, address)

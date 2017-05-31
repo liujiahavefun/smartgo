@@ -6,13 +6,15 @@ import (
 	"strconv"
 	"sync"
 	"testing"
+
+	"smartgo/libs/utils"
 )
 
 var (
 	listN  int
 	number int
 	list   [][]interface{}
-	cMap   *ConcurrentMap
+	cMap   *utils.ConcurrentMap
 	lMap   *lockMap
 )
 
@@ -32,7 +34,7 @@ func init() {
 		list[i] = list1
 	}
 
-	cMap = NewConcurrentMap()
+	cMap = utils.NewConcurrentMap()
 	lMap = newLockMap()
 	for i := range list[0] {
 		cMap.Put(i, i)
@@ -105,7 +107,7 @@ func BenchmarkLockMapPut(b *testing.B) {
 }
 
 func BenchmarkConcurrentMapPut(b *testing.B) {
-	cm := NewConcurrentMap()
+	cm := utils.NewConcurrentMap()
 	for n := 0; n < b.N; n++ {
 		wg := new(sync.WaitGroup)
 		wg.Add(listN)
@@ -141,7 +143,7 @@ func BenchmarkLockMapPutNoGrow(b *testing.B) {
 }
 
 func BenchmarkConcurrentMapPutNoGrow(b *testing.B) {
-	cm := NewConcurrentMap()
+	cm := utils.NewConcurrentMap()
 	for n := 0; n < b.N; n++ {
 		wg := new(sync.WaitGroup)
 		wg.Add(listN)
@@ -177,7 +179,7 @@ func BenchmarkLockMapPut2(b *testing.B) {
 }
 
 func BenchmarkConcurrentMapPut2(b *testing.B) {
-	cm := NewConcurrentMap()
+	cm := utils.NewConcurrentMap()
 	for n := 0; n < b.N; n++ {
 		wg := new(sync.WaitGroup)
 		wg.Add(listN)
@@ -246,7 +248,7 @@ func BenchmarkLockMapPutAndGet(b *testing.B) {
 }
 
 func BenchmarkConcurrentMapPutAndGet(b *testing.B) {
-	cm := NewConcurrentMap()
+	cm := utils.NewConcurrentMap()
 	for n := 0; n < b.N; n++ {
 		wg := new(sync.WaitGroup)
 		wg.Add(listN)

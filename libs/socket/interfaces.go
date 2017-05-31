@@ -71,6 +71,7 @@ type Session interface {
 
 	//归属端
 	FromPeer() Peer
+	SelfPeer() Peer
 }
 
 type SessionManager interface {

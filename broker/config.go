@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/golang/glog"
 	"os"
 )
 
@@ -12,7 +11,6 @@ type BrokerConfig struct {
 	ListenOn          string
 	LogFile           string
 	RouterServerList  []string
-	RouterServerNum   int
 }
 
 func NewBrokerConfig(configFile string) *BrokerConfig {
@@ -24,7 +22,7 @@ func NewBrokerConfig(configFile string) *BrokerConfig {
 func (self *BrokerConfig) LoadConfig() error {
 	file, err := os.Open(self.configFile)
 	if err != nil {
-		glog.Error(err.Error())
+		logError(err.Error())
 		return err
 	}
 	defer file.Close()
@@ -33,6 +31,7 @@ func (self *BrokerConfig) LoadConfig() error {
 	dec := json.NewDecoder(file)
 	err = dec.Decode(&self)
 	if err != nil {
+		logError(err.Error())
 		return err
 	}
 
