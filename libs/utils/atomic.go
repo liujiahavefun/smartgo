@@ -1,3 +1,10 @@
+/*
+Data types and structues of atomic wrapper:
+AtomicInt32
+AtomicInt64
+AtomicBoolean
+*/
+
 package utils
 
 import (

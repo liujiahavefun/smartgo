@@ -1,8 +1,5 @@
 /*
-Data types and structues for concurrent use:
-AtomicInt32
-AtomicInt64
-AtomicBoolean
+sharding的且支持并发访问的map
 ConcurrentMap
 */
 
