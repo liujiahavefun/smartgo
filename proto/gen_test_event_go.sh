@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 outdir=test
 plugindir=/Users/liujia/go/bin
 

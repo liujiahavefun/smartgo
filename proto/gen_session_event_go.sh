@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 outdir=sessevent
 plugindir=/Users/liujia/go/bin
 
