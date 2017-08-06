@@ -1,0 +1,8 @@
+package com.cloudywood.ip.loginsdk.proto;
+
+option java_package = "com.cloudywood.ip.loginsdk.proto";
+option java_outer_classname = "BaseProtoBean";
+
+message BaseProtoMsg{
+    required int32 uri = 1;
+}

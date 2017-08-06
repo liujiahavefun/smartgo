@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package login_event;
+
+//如果是java编译的话，需要更改修改package信息，先这么试试，不行再说
+//package com.cloudywood.ip.loginsdk.proto;
+//option java_package = "com.cloudywood.ip.loginsdk.proto";
+//option java_outer_classname = "LoginProtoBean";
+
+//liujia: 暂且不用，省得warning。但protobuf正确姿势是什么，还要继续研究
+//import "base.proto"
+
+//***************************************************************
+//登录相关
+//***************************************************************
+
+//用户名密码登录
+message PLoginByPassport {
+    int32 uri = 1;
+    string passport = 21;
+    string password = 22;
+    string deviceid = 23;   //deviceid为标识登录设备的设备唯一号
+    string devicetype = 24; //登录设备类型，android/ios/pc
+    //liujia: params作为万能容器，添加version--客户端版本号，devicetype--客户端硬件类型，ostype-客户端os类型, sdkversion等
+    map<string, string> params = 25;
+}
+
+//用户名密码登录回应，登录成功rescode为0，uid、token返回，否则uid、token为空
+message PLoginByPassportRes {
+    int32 uri = 1;
+    int32 rescode = 21;
+    string uid = 22;
+    string token = 23;
+}
+
+//token登录
+message PLoginByToken {
+    int32 uri = 1;
+    string uid = 21;
+    string token = 22;
+    string deviceid = 23;
+    string devicetype = 24;
+    //liujia: params作为万能容器，添加version--客户端版本号，devicetype--客户端硬件类型，ostype-客户端os类型, sdkversion等
+    map<string, string> params = 25;
+}
+
+//token登录回应
+message PLoginByTokenRes {
+    int32 uri = 1;
+    int32 rescode = 21;
+    string uid = 22;
+    string token = 23; //liujia:可能会更新token，不管怎么样，这个返回的token客户端都要记下来
+}
+
+//退出登录
+message PLoginLogout {
+    int32 uri = 1;
+    string uid = 21;
+    string token = 22;
+    string deviceid = 23;
+    string devicetype = 24;
+}
+
+//退出登录回应
+message PLoginLogoutRes {
+    int32 uri = 1;
+    int32 rescode = 21;
+    string uid = 22;
+}
+
+//客户端发送的心跳
+message PLoginPing {
+    int32 uri = 1;
+    string uid = 21;
+    sint64 clientts = 22;
+}
+
+//客户端心跳包回应，clientts为收到的客户端心跳包的clientts字段，同时返回server的时间戳，可进行时间同步
+message PLoginPingRes {
+    int32 uri = 1;
+    string uid = 21;
+    sint64 clientts = 22;
+    sint64 serverts = 23;
+}
+
+//发给客户端的被踢了的包
+message PLoginKickOff {
+    int32 uri = 1;
+    string uid = 21;
+    string reason = 22;
+    //liujia: 需要返回appid表明是在哪个平台登录导致被踢的么？
+}

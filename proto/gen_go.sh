@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 outdir=gamedef2
 plugindir=/Users/liujia/go/bin
 
