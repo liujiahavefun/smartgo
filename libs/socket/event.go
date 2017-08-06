@@ -6,12 +6,12 @@ import (
 
 func Init() {
 	fmt.Println("event Init()")
-	Event_SessionAccepted      = uint32(MessageMetaByName("sessevent.SessionAccepted").ID)
-	Event_SessionAcceptFailed  = uint32(MessageMetaByName("sessevent.SessionAcceptFailed").ID)
-	Event_SessionConnected     = uint32(MessageMetaByName("sessevent.SessionConnected").ID)
-	Event_SessionConnectFailed = uint32(MessageMetaByName("sessevent.SessionConnectFailed").ID)
-	Event_SessionClosed        = uint32(MessageMetaByName("sessevent.SessionClosed").ID)
-	Event_SessionError         = uint32(MessageMetaByName("sessevent.SessionError").ID)
+	Event_SessionAccepted      = uint32(MessageMetaByName("session_event.SessionAccepted").ID)
+	Event_SessionAcceptFailed  = uint32(MessageMetaByName("session_event.SessionAcceptFailed").ID)
+	Event_SessionConnected     = uint32(MessageMetaByName("session_event.SessionConnected").ID)
+	Event_SessionConnectFailed = uint32(MessageMetaByName("session_event.SessionConnectFailed").ID)
+	Event_SessionClosed        = uint32(MessageMetaByName("session_event.SessionClosed").ID)
+	Event_SessionError         = uint32(MessageMetaByName("session_event.SessionError").ID)
 }
 
 /*

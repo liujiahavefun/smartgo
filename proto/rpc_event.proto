@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package gamedef3;
+package rpc_proto;
 
 // ==========================================================
 // RPC
@@ -10,9 +10,7 @@ package gamedef3;
 message RemoteCallREQ
 {	                 
 	uint32 MsgID = 1;		// 消息号
-	
 	bytes Data = 2;		// 用户封包
-	
 	int64 CallID = 3;
 }
 
@@ -20,13 +18,9 @@ message RemoteCallREQ
 message RemoteCallACK
 {
 	uint32 MsgID = 1;		// 消息号
-	
 	bytes Data = 2;		// 用户封包
-	
 	int64 CallID = 3;
 }
-
-
 
 // ==========================================================
 // 测试用消息

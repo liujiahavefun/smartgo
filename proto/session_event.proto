@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package sessevent;
+package session_event;
 
 //==========================================================
 //Session事件消息
@@ -30,7 +30,7 @@ message SessionConnectFailed
 	string Reason = 1;
 }
 
-//Session关闭，因为错误被关闭，就填eason好喽
+//Session关闭，因为错误被关闭，就填reason好喽
 message SessionClosed
 {
 	string Reason = 1;

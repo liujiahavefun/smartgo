@@ -1,6 +1,7 @@
 package socket
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/golang/protobuf/proto"
@@ -27,6 +28,9 @@ func BuildPacket(data interface{}) (*Packet, *MessageMeta) {
 	}
 
 	meta := MessageMetaByName(MessageFullName(reflect.TypeOf(msg)))
+	if meta == nil {
+		fmt.Println("invalid or unregistered msg:", reflect.TypeOf(data))
+	}
 
 	return &Packet{
 		MsgID: uint32(meta.ID),

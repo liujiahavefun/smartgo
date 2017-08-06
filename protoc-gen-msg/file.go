@@ -20,14 +20,14 @@ package {{.PackageName}}
 
 {{if gt .TotalMessages 0}}
 import (
-    "cellnet"
+    "smartgo/libs/socket"
 )
 {{end}}
 
 func init() {
     {{range .Protos}}
     // {{.Name}}{{range .Messages}}
-    cellnet.RegisterMessageMeta("{{.FullName}}", (*{{.Name}})(nil), {{.MsgID}}) {{end}}
+    socket.RegisterMessageMeta("{{.FullName}}", (*{{.Name}})(nil), {{.MsgID}}) {{end}}
     {{end}}
 }
 

@@ -4,7 +4,7 @@ import (
     "fmt"
 
     sessproto "smartgo/proto/sessevent"
-    testproto "smartgo/proto/test"
+    testproto "smartgo/proto/test_event"
     "smartgo/libs/socket"
 )
 
@@ -63,7 +63,7 @@ func sessprotoRegisterMessage() {
 }
 
 func testprotoRegisterMessage() {
-    fmt.Println("test RegisterMessage")
-    // test.proto
-    socket.RegisterMessageMeta("test.TestEchoACK", (*testproto.TestEchoACK)(nil), 509149489)
+    fmt.Println("test_event RegisterMessage")
+    // test_event.proto
+    socket.RegisterMessageMeta("test_event.TestEchoACK", (*testproto.TestEchoACK)(nil), 509149489)
 }

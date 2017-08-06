@@ -3,7 +3,7 @@ package socket
 import (
 	"net"
 
-	"smartgo/proto/sessevent"
+	"smartgo/proto/session_event"
 )
 
 type TcpServer struct {
@@ -55,11 +55,11 @@ func (self *TcpServer) Start(address string) Server {
 			if err != nil {
 				//TODO: onErrorFunc instead, 别随地胡逼抛事件
 				logErrorf("#accept failed(%s) %v", self.name, err.Error())
-				self.evq.Post(self, newSessionEvent(Event_SessionAcceptFailed, nil, &sessevent.SessionAcceptFailed{Reason: err.Error()}))
+				self.evq.Post(self, newSessionEvent(Event_SessionAcceptFailed, nil, &session_event.SessionAcceptFailed{Reason: err.Error()}))
 				break
 			}
 
-			self.evq.Post(self, newSessionEvent(Event_SessionAccepted, nil, &sessevent.SessionAccepted{}))
+			self.evq.Post(self, newSessionEvent(Event_SessionAccepted, nil, &session_event.SessionAccepted{}))
 
 			//处理连接进入独立线程, 防止accept无法响应
 			go func() {
@@ -105,7 +105,7 @@ func (self *TcpServer) onSessionConnectedFunc(sess Session) {
 func (self *TcpServer) onSessionClosedFunc(sess Session) {
 	//fmt.Println("liujia, tcp_server onSessionClosedFunc: ", session)
 	self.sessionMgr.Remove(sess)
-	ev := newSessionEvent(Event_SessionClosed, sess, &sessevent.SessionClosed{Reason: ""})
+	ev := newSessionEvent(Event_SessionClosed, sess, &session_event.SessionClosed{Reason: ""})
 	self.evq.Post(self, ev)
 
 	/*
@@ -120,7 +120,7 @@ func (self *TcpServer) onSessionClosedFunc(sess Session) {
 func (self *TcpServer) onSessionErrorFunc(sess Session, err error) {
 	//fmt.Println("liujia, tcp_server onSessionErrorFunc: ", session, err)
 	//TODO: Event_SessionClosed to Event_SessionError
-	ev := newSessionEvent(Event_SessionError, sess, &sessevent.SessionError{Reason: err.Error()})
+	ev := newSessionEvent(Event_SessionError, sess, &session_event.SessionError{Reason: err.Error()})
 
 	//post断开事件
 	self.evq.Post(self, ev)

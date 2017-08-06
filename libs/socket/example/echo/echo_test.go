@@ -4,8 +4,8 @@ import (
     "fmt"
     "testing"
 
-    sessproto "smartgo/proto/sessevent"
-    testproto "smartgo/proto/test"
+    sessproto "smartgo/proto/session_event"
+    testproto "smartgo/proto/test_event"
     "smartgo/libs/socket"
     "smartgo/libs/socket/example"
 )
@@ -16,7 +16,7 @@ func server() {
     queue := socket.NewEventQueue()
     server := socket.NewTcpServer(queue).Start("127.0.0.1:7201")
 
-    socket.RegisterMessage(server, "test.TestEchoACK", func(content interface{}, ses socket.Session) {
+    socket.RegisterMessage(server, "test_event.TestEchoACK", func(content interface{}, ses socket.Session) {
         msg := content.(*testproto.TestEchoACK)
         fmt.Println("server recv:", msg.String())
         ses.Send(&testproto.TestEchoACK{
@@ -31,19 +31,19 @@ func client() {
     queue := socket.NewEventQueue()
     connector := socket.NewConnector(queue).Start("127.0.0.1:7201")
 
-    socket.RegisterMessage(connector, "test.TestEchoACK", func(content interface{}, ses socket.Session) {
+    socket.RegisterMessage(connector, "test_event.TestEchoACK", func(content interface{}, ses socket.Session) {
         msg := content.(*testproto.TestEchoACK)
         fmt.Println("client recv:", msg.String())
         signal.Done(1)
     })
 
-    socket.RegisterMessage(connector, "sessevent.SessionConnected", func(content interface{}, ses socket.Session) {
+    socket.RegisterMessage(connector, "session_event.SessionConnected", func(content interface{}, ses socket.Session) {
         ses.Send(&testproto.TestEchoACK{
             Content: "hello",
         })
     })
 
-    socket.RegisterMessage(connector, "sessevent.SessionConnectFailed", func(content interface{}, ses socket.Session) {
+    socket.RegisterMessage(connector, "session_event.SessionConnectFailed", func(content interface{}, ses socket.Session) {
         msg := content.(*sessproto.SessionConnectFailed)
         fmt.Println(msg.Reason)
     })
@@ -56,19 +56,18 @@ func client() {
 func sessprotoRegisterMessage() {
     fmt.Println("sessevent RegisterMessage")
     // session.proto
-    socket.RegisterMessageMeta("sessevent.SessionAccepted", (*sessproto.SessionAccepted)(nil), 2136350511)
-    socket.RegisterMessageMeta("sessevent.SessionAcceptFailed", (*sessproto.SessionAcceptFailed)(nil), 1213847952)
-    socket.RegisterMessageMeta("sessevent.SessionConnected", (*sessproto.SessionConnected)(nil), 4228538224)
-    socket.RegisterMessageMeta("sessevent.SessionConnectFailed", (*sessproto.SessionConnectFailed)(nil), 1278926828)
-    socket.RegisterMessageMeta("sessevent.SessionClosed", (*sessproto.SessionClosed)(nil), 2830250790)
-    socket.RegisterMessageMeta("sessevent.SessionError", (*sessproto.SessionError)(nil), 3227768243)
-
+    socket.RegisterMessageMeta("session_event.SessionAccepted", (*sessproto.SessionAccepted)(nil), 348117910)
+    socket.RegisterMessageMeta("session_event.SessionAcceptFailed", (*sessproto.SessionAcceptFailed)(nil), 1978788392)
+    socket.RegisterMessageMeta("session_event.SessionConnected", (*sessproto.SessionConnected)(nil), 3543838007)
+    socket.RegisterMessageMeta("session_event.SessionConnectFailed", (*sessproto.SessionConnectFailed)(nil), 1720533237)
+    socket.RegisterMessageMeta("session_event.SessionClosed", (*sessproto.SessionClosed)(nil), 90181607)
+    socket.RegisterMessageMeta("session_event.SessionError", (*sessproto.SessionError)(nil), 1937281175)
 }
 
 func testprotoRegisterMessage() {
-    fmt.Println("test RegisterMessage")
+    fmt.Println("test_event RegisterMessage")
     // test.proto
-    socket.RegisterMessageMeta("test.TestEchoACK", (*testproto.TestEchoACK)(nil), 509149489)
+    socket.RegisterMessageMeta("test_event.TestEchoACK", (*testproto.TestEchoACK)(nil), 509149489)
 }
 
 func TestEcho(t *testing.T) {
