@@ -7,7 +7,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-//liujia: Type是proto.Message的实际类型，Name是类似gamedef.TestEchoACK的名字，ID实际是对应的消息号MsgID
+//liujia: Type是proto.Message的实际类型，Name是类似testproto.TestEchoACK这样的可读名字，ID对应实际的消息号MsgID
 type MessageMeta struct {
 	Type reflect.Type
 	Name string

@@ -6,8 +6,11 @@ import (
 
     sessproto "smartgo/proto/session_event"
     testproto "smartgo/proto/test_event"
+    "smartgo/libs/utils"
     "smartgo/libs/socket"
     "smartgo/libs/socket/example"
+    "strings"
+    "time"
 )
 
 var signal *test.SignalTester
@@ -17,21 +20,23 @@ func runServer() {
     server := socket.NewTcpServer(queue).Start("127.0.0.1:7201")
 
     socket.RegisterMessage(server, "session_event.SessionConnected", func(content interface{}, ses socket.Session) {
-        fmt.Println("recv SessionConnected, from peer: ", ses.FromPeer().Name())
+        fmt.Println("Server: recv SessionConnected from peer", ses.FromPeer().Name(), utils.GoID())
         ses.FromPeer().SetName(ses.FromPeer().Name() + "_liujia")
     })
 
     socket.RegisterMessage(server, "test_event.TestEchoACK", func(content interface{}, ses socket.Session) {
-        fmt.Println("recv TestEchoACK, from peer: ", ses.FromPeer().Name())
+        fmt.Println("Server: recv TestEchoACK from peer", ses.FromPeer().Name(), utils.GoID())
 
         msg := content.(*testproto.TestEchoACK)
         // 发包后关闭
         ses.Send(&testproto.TestEchoACK{
-            Content: msg.Content,
+            Content: msg.Content + "_liujia",
         })
 
         if msg.Content != "noclose" {
+            fmt.Println("Server: close session to peer ", ses.FromPeer().Name(), utils.GoID())
             ses.Close()
+            signal.Done(2)
         }
     })
 
@@ -53,19 +58,35 @@ func testConnActiveClose() {
 
     socket.RegisterMessage(connector, "test_event.TestEchoACK", func(content interface{}, ses socket.Session) {
         msg := content.(*testproto.TestEchoACK)
-        fmt.Println("client recv:", msg.String())
-        signal.Done(2)
+        fmt.Println("Client: recv ", msg.String())
 
-        // 客户端主动断开
-        ses.Close()
+        if strings.Contains(msg.Content, "liujia") == true {
+            queue.PostDelayed(connector, 5*time.Second, func() {
+                fmt.Println("Client: postDelayed ", utils.GoID())
+                //告诉服务器断开
+                ses.Send(&testproto.TestEchoACK{
+                    Content: "close",
+                })
+            })
+            return
+        }
+
+        //fmt.Println("Server: close session to peer ", ses.FromPeer().Name())
+        //signal.Done(2)
+        //客户端主动断开
+        //ses.Close()
     })
 
     socket.RegisterMessage(connector, "session_event.SessionClosed", func(content interface{}, ses socket.Session) {
         msg := content.(*sessproto.SessionClosed)
-        fmt.Println("close ok!", msg.Reason)
+        fmt.Println("Client: recv SessionClosed", msg.Reason, utils.GoID())
 
         // 正常断开
         signal.Done(3)
+    })
+
+    socket.NewTimer(queue, 1*time.Second, func(t *socket.Timer) {
+        fmt.Println("Client: timer", utils.GoID())
     })
 
     queue.StartLoop()
@@ -125,7 +146,7 @@ func testprotoRegisterMessage() {
 }
 
 func TestClose(t *testing.T) {
-    signal = test.NewSignalTester(t)
+    signal = test.NewSignalTesterTimeout(t, 10)
 
     sessprotoRegisterMessage()
     testprotoRegisterMessage()
@@ -134,5 +155,5 @@ func TestClose(t *testing.T) {
     runServer()
 
     testConnActiveClose()
-    testRecvDisconnected()
+    //testRecvDisconnected()
 }
