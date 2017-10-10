@@ -1,69 +1,38 @@
 package main
 
 import (
-    "fmt"
-
     sessproto "smartgo/proto/session_event"
     loginproto "smartgo/proto/login_event"
     "smartgo/libs/socket"
 )
 
-func init() {
+var (
+    gServer     socket.Server
+    gEventQueue socket.EventQueue
+)
+
+func start(address string) {
     sessionprotoRegisterMessage()
     loginprotoRegisterMessage()
-}
+    socket.Init()
 
-func startServer(address string) {
-    queue := socket.NewEventQueue()
-    server := socket.NewTcpServer(queue).Start(address)
-
-    socket.RegisterMessage(server, "session_event.SessionAccepted", func(content interface{}, ses socket.Session) {
-        msg := content.(sessproto.SessionAccepted)
-        fmt.Println(msg)
-    })
-
-    socket.RegisterMessage(server, "session_event.SessionAcceptFailed", func(content interface{}, ses socket.Session) {
-        msg := content.(sessproto.SessionAcceptFailed)
-        fmt.Println(msg)
-    })
-
-    socket.RegisterMessage(server, "session_event.SessionConnected", func(content interface{}, ses socket.Session) {
-        msg := content.(sessproto.SessionConnected)
-        fmt.Println(msg)
-    })
-
-    socket.RegisterMessage(server, "session_event.SessionConnectFailed", func(content interface{}, ses socket.Session) {
-        msg := content.(sessproto.SessionConnectFailed)
-        fmt.Println(msg)
-    })
-
-    socket.RegisterMessage(server, "session_event.SessionError", func(content interface{}, ses socket.Session) {
-        msg := content.(sessproto.SessionError)
-        fmt.Println(msg)
-    })
-
-    socket.RegisterMessage(server, "session_event.SessionClosed", func(content interface{}, ses socket.Session) {
-        msg := content.(sessproto.SessionClosed)
-        fmt.Println(msg)
-    })
-
-    queue.StartLoop()
+    runServer(address)
 }
 
 func sessionprotoRegisterMessage() {
-    fmt.Println("session_event RegisterMessage")
+    logInfo("Register Message for session_event")
     // session_event.proto
-    socket.RegisterMessageMeta("sessevent.SessionAccepted", (*sessproto.SessionAccepted)(nil), 2136350511)
-    socket.RegisterMessageMeta("sessevent.SessionAcceptFailed", (*sessproto.SessionAcceptFailed)(nil), 1213847952)
-    socket.RegisterMessageMeta("sessevent.SessionConnected", (*sessproto.SessionConnected)(nil), 4228538224)
-    socket.RegisterMessageMeta("sessevent.SessionConnectFailed", (*sessproto.SessionConnectFailed)(nil), 1278926828)
-    socket.RegisterMessageMeta("sessevent.SessionClosed", (*sessproto.SessionClosed)(nil), 2830250790)
-    socket.RegisterMessageMeta("sessevent.SessionError", (*sessproto.SessionError)(nil), 3227768243)
+    socket.RegisterMessageMeta("session_event.SessionAccepted", (*sessproto.SessionAccepted)(nil), 348117910)
+    socket.RegisterMessageMeta("session_event.SessionAcceptFailed", (*sessproto.SessionAcceptFailed)(nil), 1978788392)
+    socket.RegisterMessageMeta("session_event.SessionConnected", (*sessproto.SessionConnected)(nil), 3543838007)
+    socket.RegisterMessageMeta("session_event.SessionConnectFailed", (*sessproto.SessionConnectFailed)(nil), 1720533237)
+    socket.RegisterMessageMeta("session_event.SessionClosed", (*sessproto.SessionClosed)(nil), 90181607)
+    socket.RegisterMessageMeta("session_event.SessionError", (*sessproto.SessionError)(nil), 1937281175)
 
 }
 
 func loginprotoRegisterMessage()  {
-    fmt.Println("login_event RegisterMessage")
+    logInfo("Register Message for login_event")
     // login_event.proto
     socket.RegisterMessageMeta("login_event.PLoginByPassport", (*loginproto.PLoginByPassport)(nil), 3176521479)
     socket.RegisterMessageMeta("login_event.PLoginByPassportRes", (*loginproto.PLoginByPassportRes)(nil), 1894287111)
@@ -74,4 +43,117 @@ func loginprotoRegisterMessage()  {
     socket.RegisterMessageMeta("login_event.PLoginPing", (*loginproto.PLoginPing)(nil), 1951739067)
     socket.RegisterMessageMeta("login_event.PLoginPingRes", (*loginproto.PLoginPingRes)(nil), 3845948673)
     socket.RegisterMessageMeta("login_event.PLoginKickOff", (*loginproto.PLoginKickOff)(nil), 4292429949)
+}
+
+func global_log(session socket.Session)  {
+    //logInfo(gSessionMgr)
+}
+
+func runServer(address string) {
+    gEventQueue = socket.NewEventQueue()
+    gServer = socket.NewTcpServer(gEventQueue).Start(address)
+
+    //处理session消息
+    socket.RegisterMessage(gServer, "session_event.SessionAccepted", func(content interface{}, session socket.Session) {
+        global_log(session)
+        msg, ok := content.(*sessproto.SessionAccepted)
+        if !ok || msg == nil {
+            logWarning("Server: recv invalid SessionAccepted message")
+            return
+        }
+        handleSessionAccepted(msg, session)
+    })
+
+    socket.RegisterMessage(gServer, "session_event.SessionAcceptFailed", func(content interface{}, session socket.Session) {
+        global_log(session)
+        msg, ok := content.(*sessproto.SessionAcceptFailed)
+        if !ok || msg == nil  {
+            logWarning("Server: recv invalid SessionAcceptFailed message")
+            return
+        }
+        handleSessionAcceptFailed(msg, session)
+    })
+
+    socket.RegisterMessage(gServer, "session_event.SessionConnected", func(content interface{}, session socket.Session) {
+        global_log(session)
+        msg, ok := content.(*sessproto.SessionConnected)
+        if !ok || msg == nil  {
+            logWarning("Server: recv invalid SessionConnected message")
+            return
+        }
+        handleSessionConnected(msg, session)
+    })
+
+    socket.RegisterMessage(gServer, "session_event.SessionConnectFailed", func(content interface{}, session socket.Session) {
+        global_log(session)
+        msg, ok := content.(*sessproto.SessionConnectFailed)
+        if !ok || msg == nil  {
+            logWarning("Server: recv invalid SessionConnectFailed message")
+            return
+        }
+        handleSessionConnectFailed(msg, session)
+    })
+
+    socket.RegisterMessage(gServer, "session_event.SessionError", func(content interface{}, session socket.Session) {
+        global_log(session)
+        msg, ok := content.(*sessproto.SessionError)
+        if !ok || msg == nil  {
+            logWarning("Server: recv invalid SessionError message")
+            return
+        }
+        handleSessionError(msg, session)
+    })
+
+    socket.RegisterMessage(gServer, "session_event.SessionClosed", func(content interface{}, session socket.Session) {
+        global_log(session)
+        msg, ok := content.(*sessproto.SessionClosed)
+        if !ok || msg == nil  {
+            logWarning("Server: recv invalid SessionClosed message")
+            return
+        }
+        handleSessionClosed(msg, session)
+    })
+
+    //处理login消息
+    socket.RegisterMessage(gServer, "login_event.PLoginByPassport", func(content interface{}, session socket.Session) {
+        global_log(session)
+        msg, ok := content.(*loginproto.PLoginByPassport)
+        if !ok || msg == nil  {
+            logWarning("Server: recv invalid PLoginByPassport message")
+            return
+        }
+        handleLoginByPassport(msg, session)
+    })
+
+    socket.RegisterMessage(gServer, "login_event.PLoginByToken", func(content interface{}, session socket.Session) {
+        global_log(session)
+        msg, ok := content.(*loginproto.PLoginByToken)
+        if !ok || msg == nil  {
+            logWarning("Server: recv invalid PLoginByToken message")
+            return
+        }
+        handleLoginByToken(msg, session)
+    })
+
+    socket.RegisterMessage(gServer, "login_event.PLoginLogout", func(content interface{}, session socket.Session) {
+        global_log(session)
+        msg, ok := content.(*loginproto.PLoginLogout)
+        if !ok || msg == nil  {
+            logWarning("Server: recv invalid PLoginLogout message")
+            return
+        }
+        handleLoginLogout(msg, session)
+    })
+
+    socket.RegisterMessage(gServer, "login_event.PLoginPing", func(content interface{}, session socket.Session) {
+        global_log(session)
+        msg, ok := content.(*loginproto.PLoginPing)
+        if !ok || msg == nil  {
+            logWarning("Server: recv invalid PLoginPing message")
+            return
+        }
+        handleLoginPing(msg, session)
+    })
+
+    gEventQueue.StartLoop()
 }

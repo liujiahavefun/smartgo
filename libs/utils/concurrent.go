@@ -50,7 +50,9 @@ func (cm *ConcurrentMap) PutIfAbsent(k, v interface{}) error {
 	if shard, err := cm.shardFor(k); err != nil {
 		return err
 	} else {
-		if _, ok := shard.get(k); !ok {
+		if _, ok := shard.get(k); ok {
+			return ErrorKeyAlreadyExist
+		}else {
 			shard.put(k, v)
 		}
 	}

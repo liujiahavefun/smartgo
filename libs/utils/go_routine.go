@@ -7,6 +7,9 @@ import (
     "fmt"
 )
 
+/*
+ * 获取当前的goroutine的id，这个俺也是从网上抄的
+ */
 func GoID() int {
     var buf [64]byte
     n := runtime.Stack(buf[:], false)

@@ -72,6 +72,10 @@ type Session interface {
 	//归属端
 	FromPeer() Peer
 	SelfPeer() Peer
+
+	//自定义属性
+	GetParam(string) interface{}
+	SetParam(string, interface{})
 }
 
 type SessionManager interface {

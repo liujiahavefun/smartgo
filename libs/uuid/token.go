@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	token_key = "liujianiubi"
+	token_key = "laoliubuniubihahaha"
 )
 
 func init() {

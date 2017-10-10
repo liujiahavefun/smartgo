@@ -9,10 +9,11 @@ type sessionBase struct {
 	otherSide Peer
 
 	id int64
-	finish sync.WaitGroup  //session结束时等待读写线程退出
-	needNotifyWrite bool //是否需要通知写线程关闭
 	stream *ltvStream
 	sendList *PacketList
+	params map[string]interface{}
+	finish sync.WaitGroup  //session结束时等待读写线程退出
+	needNotifyWrite bool //是否需要通知写线程关闭
 
 	//事件回调
 	onSessionClosedFunc OnSessionClosedFunc
@@ -25,8 +26,9 @@ func newSessionBase(stream *ltvStream, myself Peer, otherSide Peer, callbacks *S
 		stream:          stream,
 		myself:        	 myself,
 		otherSide:       otherSide,
-		needNotifyWrite: true,
 		sendList:        NewPacketList(),
+		params:			 make(map[string]interface{}),
+		needNotifyWrite: true,
 		onSessionClosedFunc: callbacks.OnClosed,
 		onSessionErrorFunc: callbacks.OnError,
 		onSessionRecvPacketFunc: callbacks.OnRecvPacket,
@@ -61,6 +63,14 @@ func (self *sessionBase) FromPeer() Peer {
 
 func (self *sessionBase) SelfPeer() Peer {
 	return self.myself
+}
+
+func (self *sessionBase) GetParam(key string) interface{} {
+	return self.params[key]
+}
+
+func (self *sessionBase) SetParam(key string, val interface{}) {
+	self.params[key] = val
 }
 
 func (self *sessionBase) Close() {

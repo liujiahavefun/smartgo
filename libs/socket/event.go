@@ -10,7 +10,6 @@ import (
  * 只有内部消息外部消息都用proto，纯粹是哥高瞻远瞩，为了统一内部消息处理和外部消息处理
  */
 func Init() {
-	fmt.Println("event Init()")
 	Event_SessionAccepted      = uint32(MessageMetaByName("session_event.SessionAccepted").ID)
 	Event_SessionAcceptFailed  = uint32(MessageMetaByName("session_event.SessionAcceptFailed").ID)
 	Event_SessionConnected     = uint32(MessageMetaByName("session_event.SessionConnected").ID)
