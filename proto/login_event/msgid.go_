@@ -22,3 +22,20 @@ func init() {
 	socket.RegisterMessageMeta("login_event.PLoginKickOff", (*PLoginKickOff)(nil), 4292429949)
 
 }
+
+/*
+ * public static final int SVID_ALL = 0;
+ * public static final int SVID_LOGIN = 1;
+ * public static final int SVID_PUSH = 2;
+
+ * //Login子服务的protocol id
+ * public static final int PLoginByPassport_uri = (SVID_LOGIN << 16 | 1);
+ * public static final int PLoginByPassportRes_uri = (SVID_LOGIN << 16 | 2);
+ * public static final int PLoginByUid_uri = (SVID_LOGIN << 16 | 3);
+ * public static final int PLoginByUidRes_uri = (SVID_LOGIN << 16 | 4);
+ * public static final int PLoginLogout_uri = (SVID_LOGIN << 16 | 5);
+ * public static final int PLoginLogoutRes_uri = (SVID_LOGIN << 16 | 6);
+ * public static final int PLoginPing_uri = (SVID_LOGIN << 16 | 7);
+ * public static final int PLoginPingRes_uri = (SVID_LOGIN << 16 | 8);
+ * public static final int PLoginKickOff_uri = (SVID_LOGIN << 16 | 9);
+*/

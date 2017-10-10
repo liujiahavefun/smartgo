@@ -7,20 +7,24 @@ import (
 
     //sessproto "smartgo/proto/sessevent"
     //testproto "smartgo/proto/test"
+    "smartgo/libs/utils"
     "smartgo/libs/socket"
     "smartgo/libs/socket/example"
 )
 
 func TestTimer(t *testing.T) {
+    fmt.Printf("TestTimer, go id: %v\n", utils.GoID())
     signal := test.NewSignalTester(t)
 
     queue := socket.NewEventQueue()
+    server := socket.NewTcpServer(queue).Start("127.0.0.1:7201")
     queue.StartLoop()
 
-    const testTimes = 3
+    const testTimes = 5
     var count int = testTimes
 
-    socket.NewTimer(queue, time.Second, func(t *socket.Timer) {
+    socket.NewTimer2(server, queue, time.Second, func(t *socket.Timer) {
+        fmt.Printf("TestTimer callback, go id: %v\n", utils.GoID())
         fmt.Println("timer 1 sec tick")
         signal.Done(1)
 
@@ -39,14 +43,17 @@ func TestTimer(t *testing.T) {
 }
 
 func TestDelay(t *testing.T) {
+    fmt.Printf("TestDelay, go id: %v\n", utils.GoID())
     signal := test.NewSignalTester(t)
 
     queue := socket.NewEventQueue()
+    server := socket.NewTcpServer(queue).Start("127.0.0.1:7201")
     queue.StartLoop()
 
     fmt.Println("delay 1 sec begin")
 
-    queue.PostDelayed(nil, time.Second, func() {
+    queue.PostDelayed(server, time.Second, func() {
+        fmt.Printf("TestDelay callback, go id: %v\n", utils.GoID())
         fmt.Println("delay done")
         signal.Done(1)
     })

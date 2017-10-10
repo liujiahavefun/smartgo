@@ -40,7 +40,15 @@ func (self *SignalTester) Done(value int) {
 func NewSignalTester(t *testing.T) *SignalTester {
     return &SignalTester{
         T:       t,
-        timeout: 3 * time.Second,
+        timeout: 5 * time.Second,
+        signal:  make(chan int),
+    }
+}
+
+func NewSignalTesterTimeout(t *testing.T, secs time.Duration) *SignalTester {
+    return &SignalTester{
+        T:       t,
+        timeout: secs * time.Second,
         signal:  make(chan int),
     }
 }

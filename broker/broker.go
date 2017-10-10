@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
+	"os/signal"
 )
 
 //liujia: 编译命令 go build -ldflags "-X main.BUILD_VERSION=0.0.1 -X main.BUILD_TIME=`date +%Y年%m月%d日-%H:%M:%S`"
@@ -21,7 +23,7 @@ func version() {
 	if len(BUILD_TIME) == 0 {
 		BUILD_TIME = "unknown"
 	}
-	fmt.Printf("broker version %s built on %s,  Copyright(c) 2016 liujia@smartgo.com", BUILD_VERSION, BUILD_TIME)
+	fmt.Printf("broker version %s built on %s,  Copyright(c) 2016 liujia@smartgo.com\n", BUILD_VERSION, BUILD_TIME)
 }
 
 func main() {
@@ -41,5 +43,23 @@ func main() {
 		panic("failed to load config")
 	}
 
-	startServer(cfg.ListenOn)
+	//init SessionMgr
+	gSessionMgr = NewSessionMgr()
+
+	//start server
+	go func() {
+		logInfo("to start broker server", cfg.ListenOn)
+		start(cfg.ListenOn)
+	}()
+
+	//进程收到的退出信号
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt)
+
+	select {
+	case <-signals:
+		logInfo("Received OS signal, stop broker server")
+	}
+
+	logInfo("exit broker process")
 }

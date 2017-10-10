@@ -4,8 +4,12 @@ import (
 	"fmt"
 )
 
+/*
+ * session_event虽然是外部定义的proto，但是仅内部使用，这里提前获得一下消息id，为了提高效率。
+ * 对外部消息，则无必要。因为对内部消息，发送的时候我自己肯定知道发的是啥消息。对外部消息，我收的时候是不知道是啥的，需要解包才知道。
+ * 只有内部消息外部消息都用proto，纯粹是哥高瞻远瞩，为了统一内部消息处理和外部消息处理
+ */
 func Init() {
-	fmt.Println("event Init()")
 	Event_SessionAccepted      = uint32(MessageMetaByName("session_event.SessionAccepted").ID)
 	Event_SessionAcceptFailed  = uint32(MessageMetaByName("session_event.SessionAcceptFailed").ID)
 	Event_SessionConnected     = uint32(MessageMetaByName("session_event.SessionConnected").ID)
