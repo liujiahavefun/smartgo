@@ -4,6 +4,7 @@ import (
     sessproto "smartgo/proto/session_event"
     loginproto "smartgo/proto/login_event"
     "smartgo/libs/socket"
+    "fmt"
 )
 
 var (
@@ -46,7 +47,14 @@ func loginprotoRegisterMessage()  {
 }
 
 func global_log(session socket.Session)  {
-    //logInfo(gSessionMgr)
+    logInfo(gSessionMgr, sessionInfo(session))
+}
+
+func sessionInfo(session socket.Session) string  {
+    if session == nil {
+        return fmt.Sprintf("[Session] empty")
+    }
+    return fmt.Sprintf("[Session], %v, %v", session.GetID(), session.FromPeer().Name())
 }
 
 func runServer(address string) {

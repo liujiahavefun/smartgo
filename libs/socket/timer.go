@@ -5,18 +5,22 @@ import (
 )
 
 type Timer struct {
-	tick *time.Ticker
-	done chan struct{}
+	tick 		*time.Ticker
+	donechan 	chan struct{}
+	done        bool
 }
 
 func (self *Timer) Stop() {
-	self.done <- struct{}{}
+	if self.done == false {
+		self.donechan <- struct{}{}
+	}
 }
 
 func NewTimer(eq EventQueue, dur time.Duration, callback func(*Timer)) *Timer {
 	self := &Timer{
 		tick: time.NewTicker(dur),
-		done: make(chan struct{}),
+		donechan: make(chan struct{}),
+		done: false,
 	}
 
 	go func() {
@@ -27,7 +31,8 @@ func NewTimer(eq EventQueue, dur time.Duration, callback func(*Timer)) *Timer {
 				eq.Post(nil, func() {
 					callback(self)
 				})
-			case <-self.done:
+			case <-self.donechan:
+				self.done = true
 				return
 			}
 		}
@@ -42,7 +47,8 @@ func NewTimer(eq EventQueue, dur time.Duration, callback func(*Timer)) *Timer {
 func NewTimer2(evd EventDispatcher, eq EventQueue, dur time.Duration, callback func(*Timer)) *Timer {
 	self := &Timer{
 		tick: time.NewTicker(dur),
-		done: make(chan struct{}),
+		donechan: make(chan struct{}),
+		done: false,
 	}
 
 	go func() {
@@ -53,7 +59,8 @@ func NewTimer2(evd EventDispatcher, eq EventQueue, dur time.Duration, callback f
 				eq.Post(evd, func() {
 					callback(self)
 				})
-			case <-self.done:
+			case <-self.donechan:
+				self.done = true
 				return
 			}
 		}
