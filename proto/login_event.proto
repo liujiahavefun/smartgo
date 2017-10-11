@@ -4,8 +4,8 @@ package login_event;
 
 //如果是java编译的话，需要更改修改package信息，先这么试试，不行再说
 //package com.cloudywood.ip.loginsdk.proto;
-//option java_package = "com.cloudywood.ip.loginsdk.proto";
-//option java_outer_classname = "LoginProtoBean";
+option java_package = "com.smart.android.smartandroid.loginsdk.proto";
+option java_outer_classname = "LoginProtoBean";
 
 //liujia: 暂且不用，省得warning。但protobuf正确姿势是什么，还要继续研究
 //import "base.proto"

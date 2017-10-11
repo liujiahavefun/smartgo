@@ -1,8 +1,10 @@
-package com.cloudywood.ip.loginsdk.proto;
+syntax = "proto3";
 
-option java_package = "com.cloudywood.ip.loginsdk.proto";
+package base_event;
+
+option java_package = "com.smart.android.smartandroid.loginsdk.proto";
 option java_outer_classname = "BaseProtoBean";
 
 message BaseProtoMsg{
-    required int32 uri = 1;
+    int32 uri = 1;
 }
