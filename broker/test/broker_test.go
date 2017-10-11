@@ -37,12 +37,15 @@ const (
 
 var signal *test.SignalTester
 
+var ip_port = "123.56.88.196:9100"
+//var ip_port = "127.0.0.1:9100"
+
 /*
  * 正常连接并登录(用户名密码方式)，然后ping三次后关掉连接
  */
 func loginByPassportAndPing() {
     queue := socket.NewEventQueue()
-    connector := socket.NewConnector(queue).Start("127.0.0.1:9100")
+    connector := socket.NewConnector(queue).Start(ip_port)
 
     //ping三次就好了
     ping_times := 0
@@ -183,7 +186,7 @@ func loginByPassportAndPing() {
  */
 func loginByTokenAndPing() {
     queue := socket.NewEventQueue()
-    connector := socket.NewConnector(queue).Start("127.0.0.1:9100")
+    connector := socket.NewConnector(queue).Start(ip_port)
 
     //ping三次就好了
     ping_times := 0
@@ -354,7 +357,7 @@ func loginByTokenAndPing() {
 
 func noLoginAfterConnected() {
     queue := socket.NewEventQueue()
-    connector := socket.NewConnector(queue).Start("127.0.0.1:9100")
+    connector := socket.NewConnector(queue).Start(ip_port)
 
     //ping三次就好了
     ping_times := 0
@@ -486,7 +489,7 @@ func noLoginAfterConnected() {
 
 func failedToPing() {
     queue := socket.NewEventQueue()
-    connector := socket.NewConnector(queue).Start("127.0.0.1:9100")
+    connector := socket.NewConnector(queue).Start(ip_port)
 
     //ping三次就好了
     ping_times := 0
