@@ -8,31 +8,37 @@ import (
 )
 
 func handleSessionAccepted(msg *sessproto.SessionAccepted, session socket.Session)  {
-    logInfo("Server: recv SessionAccepted message")
+    logInfo("Server: recv SessionAccepted message, enter")
+    logInfo("Server: recv SessionAccepted message, leave")
 }
 
 func handleSessionAcceptFailed(msg *sessproto.SessionAcceptFailed, session socket.Session)  {
-    logInfo("Server: recv SessionAcceptFailed message")
+    logInfo("Server: recv SessionAcceptFailed message, enter")
+    logInfo("Server: recv SessionAcceptFailed message, leave")
 }
 
 func handleSessionConnected(msg *sessproto.SessionConnected, session socket.Session)  {
-    logInfo("Server: recv SessionConnected message")
+    logInfo("Server: recv SessionConnected message, enter")
     gSessionMgr.onSessionConnect(session)
     addLoginCheckTask(session)
+    logInfo("Server: recv SessionConnected message, leave")
 }
 
 func handleSessionConnectFailed(msg *sessproto.SessionConnectFailed, session socket.Session)  {
-    logInfo("Server: recv SessionConnectFailed message")
+    logInfo("Server: recv SessionConnectFailed message, enter")
+    logInfo("Server: recv SessionConnectFailed message, leave")
 }
 
 func handleSessionError(msg *sessproto.SessionError, session socket.Session)  {
-    logInfo("Server: recv SessionError message")
+    logInfo("Server: recv SessionError message, enter")
     gSessionMgr.onSessionClose(session)
+    logInfo("Server: recv SessionError message, leave")
 }
 
 func handleSessionClosed(msg *sessproto.SessionClosed, session socket.Session)  {
-    logInfo("Server: recv SessionClosed message")
+    logInfo("Server: recv SessionClosed message, enter")
     gSessionMgr.onSessionClose(session)
+    logInfo("Server: recv SessionClosed message, leave")
 }
 
 func addLoginCheckTask(session socket.Session) {

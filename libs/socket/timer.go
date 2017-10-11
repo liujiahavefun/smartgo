@@ -7,38 +7,17 @@ import (
 type Timer struct {
 	tick 		*time.Ticker
 	donechan 	chan struct{}
-	done        bool
+	done        *AtomicBoolean
 }
 
 func (self *Timer) Stop() {
-	if self.done == false {
+	if self.done.CompareAndSet(false, true) == false {
 		self.donechan <- struct{}{}
 	}
 }
 
 func NewTimer(eq EventQueue, dur time.Duration, callback func(*Timer)) *Timer {
-	self := &Timer{
-		tick: time.NewTicker(dur),
-		donechan: make(chan struct{}),
-		done: false,
-	}
-
-	go func() {
-		defer self.tick.Stop()
-		for {
-			select {
-			case <-self.tick.C:
-				eq.Post(nil, func() {
-					callback(self)
-				})
-			case <-self.donechan:
-				self.done = true
-				return
-			}
-		}
-	}()
-
-	return self
+	return NewTimer2(nil, eq, dur, callback)
 }
 
 /*
@@ -48,7 +27,7 @@ func NewTimer2(evd EventDispatcher, eq EventQueue, dur time.Duration, callback f
 	self := &Timer{
 		tick: time.NewTicker(dur),
 		donechan: make(chan struct{}),
-		done: false,
+		done: NewAtomicBoolean(false),
 	}
 
 	go func() {
@@ -60,7 +39,6 @@ func NewTimer2(evd EventDispatcher, eq EventQueue, dur time.Duration, callback f
 					callback(self)
 				})
 			case <-self.donechan:
-				self.done = true
 				return
 			}
 		}

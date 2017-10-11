@@ -82,7 +82,9 @@ func (self * SessionMgr) onSessionClose(session socket.Session)  {
     session.SetParam(SESSION_LOGINED, false)
 
     if timer, err := getSessionParamAsTimer(session, SESSION_PING_TIMER); err == nil && timer != nil {
+        logInfo("Server: stop ping timer, enter")
         timer.Stop()
+        logInfo("Server: stop ping timer, leave")
     }
 
     //注意这里不要再Close了，收到此回调时已经close了，否则会无限循环

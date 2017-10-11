@@ -7,7 +7,7 @@ import (
 )
 
 func handleLoginByPassport(msg *loginproto.PLoginByPassport, session socket.Session)  {
-    logInfo("Server: recv PLoginByPassport message")
+    logInfo("Server: recv PLoginByPassport message, enter")
 
     passport := msg.Passport
     password := msg.Password
@@ -32,10 +32,12 @@ func handleLoginByPassport(msg *loginproto.PLoginByPassport, session socket.Sess
             Token:  "",
         })
     }
+
+    logInfo("Server: recv PLoginByPassport message, leave")
 }
 
 func handleLoginByToken(msg *loginproto.PLoginByToken, session socket.Session)  {
-    logInfo("Server: recv PLoginByToken message")
+    logInfo("Server: recv PLoginByToken message, enter")
 
     uid := msg.Uid
     token := msg.Token
@@ -60,10 +62,12 @@ func handleLoginByToken(msg *loginproto.PLoginByToken, session socket.Session)  
             Token:  "",
         })
     }
+
+    logInfo("Server: recv PLoginByToken message, leave")
 }
 
 func handleLoginLogout(msg *loginproto.PLoginLogout, session socket.Session)  {
-    logInfo("Server: recv PLoginLogout message")
+    logInfo("Server: recv PLoginLogout message, enter")
 
     uid := msg.Uid
     token := msg.Token
@@ -78,10 +82,13 @@ func handleLoginLogout(msg *loginproto.PLoginLogout, session socket.Session)  {
         gSessionMgr.onSessionLogout(session)
         gSessionMgr.onSessionClose(session)
     }
+
+    logInfo("Server: recv PLoginLogout message, leave")
 }
 
 func handleLoginPing(msg *loginproto.PLoginPing, session socket.Session)  {
-    logInfo("Server: recv PLoginPing message")
+    logInfo("Server: recv PLoginPing message, enter")
+
     session.SetParam(SESSION_LAST_PING_TIME, utils.CurrentTimeMillSecond())
     uid, _ := getSessionParamAsString(session, SESSION_USER_ID)
     session.Send(&loginproto.PLoginPingRes{
@@ -90,5 +97,7 @@ func handleLoginPing(msg *loginproto.PLoginPing, session socket.Session)  {
         Clientts: msg.Clientts,
         Serverts: utils.CurrentTimeMillSecond(),
     })
+
+    logInfo("Server: recv PLoginPing message, leave")
 }
 
