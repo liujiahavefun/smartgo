@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	PACKET_HEADER_SIZE = 8    // MsgID(uint32) + Ser(uint16) + Size(uint16)
+	PACKET_HEADER_SIZE = 8    //Size(uint32) + MsgID(uint32) //+ Ser(uint16)
 	TOTAL_SEND_TRY_TIMES = 100
 )
 
@@ -72,19 +72,8 @@ func (self *ltvStream) Read() (p *Packet, err error) {
 
 	p = &Packet{}
 
-	//读取ID，4字节
-	if err = binary.Read(self.headReader, binary.LittleEndian, &p.MsgID); err != nil {
-		return nil, err
-	}
-
-	//读取序号，2字节
-	var ser uint16
-	if err = binary.Read(self.headReader, binary.LittleEndian, &ser); err != nil {
-		return nil, err
-	}
-
-	//读取包大小，2字节
-	var fullsize uint16
+	//读取包大小，4字节
+	var fullsize uint32
 	if err = binary.Read(self.headReader, binary.LittleEndian, &fullsize); err != nil {
 		return nil, err
 	}
@@ -94,10 +83,23 @@ func (self *ltvStream) Read() (p *Packet, err error) {
 		return nil, packageTooBig
 	}
 
+	//读取ID，4字节
+	if err = binary.Read(self.headReader, binary.LittleEndian, &p.MsgID); err != nil {
+		return nil, err
+	}
+
+	//读取序号，2字节
+	/*
+	var ser uint16
+	if err = binary.Read(self.headReader, binary.LittleEndian, &ser); err != nil {
+		return nil, err
+	}
+
 	//序列号不匹配
 	if self.recvser != ser {
 		return nil, packageTagNotMatch
 	}
+	*/
 
 	//packet body的大小
 	dataSize := fullsize - PACKET_HEADER_SIZE
@@ -126,20 +128,22 @@ func (self *ltvStream) Write(pkt *Packet) (err error) {
 
 	self.outputHeadBuffer.Reset()
 
+	//写包大小
+	if err = binary.Write(self.outputHeadBuffer, binary.LittleEndian, uint32(len(pkt.Data)+PACKET_HEADER_SIZE)); err != nil {
+		return err
+	}
+
 	//写ID
 	if err = binary.Write(self.outputHeadBuffer, binary.LittleEndian, pkt.MsgID); err != nil {
 		return err
 	}
 
 	//写序号
+	/*
 	if err = binary.Write(self.outputHeadBuffer, binary.LittleEndian, self.sendser); err != nil {
 		return err
 	}
-
-	//写包大小
-	if err = binary.Write(self.outputHeadBuffer, binary.LittleEndian, uint16(len(pkt.Data)+PACKET_HEADER_SIZE)); err != nil {
-		return err
-	}
+	*/
 
 	//发包头
 	if err = self.writeFull(self.outputHeadBuffer.Bytes()); err != nil {
