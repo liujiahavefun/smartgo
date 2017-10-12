@@ -21,24 +21,33 @@ const (
     RES_INVALID_TOKEN       = 103
 
     //服务主ID
-    SVID_LOGIN int32 = 1
+    SVID_SESION int32 = 1
+    SVID_LOGIN  int32 = 16
+
+    //session服务子ID，这个仅内部使用
+    PSessionAccepted_uri int32          = (SVID_SESION << 16 | 1)
+    PSessionAcceptedFailed_uri int32    = (SVID_SESION << 16 | 2)
+    PSessionConnected_uri int32         = (SVID_SESION << 16 | 3)
+    PSessionConnectedFailed_uri int32   = (SVID_SESION << 16 | 4)
+    PSessionClosed_uri int32            = (SVID_SESION << 16 | 5)
+    PSessionError_uri int32             = (SVID_SESION << 16 | 6)
 
     //login服务子ID
-    PLoginByPassport_uri int32     = (SVID_LOGIN << 16 | 1)
-    PLoginByPassportRes_uri int32  = (SVID_LOGIN << 16 | 2)
-    PLoginByUid_uri int32          = (SVID_LOGIN << 16 | 3)
-    PLoginByUidRes_uri int32       = (SVID_LOGIN << 16 | 4)
-    PLoginLogout_uri int32         = (SVID_LOGIN << 16 | 5)
-    PLoginLogoutRes_uri int32      = (SVID_LOGIN << 16 | 6)
-    PLoginPing_uri int32           = (SVID_LOGIN << 16 | 7)
-    PLoginPingRes_uri int32        = (SVID_LOGIN << 16 | 8)
-    PLoginKickOff_uri int32        = (SVID_LOGIN << 16 | 9)
+    PLoginByPassport_uri int32      = (SVID_LOGIN << 16 | 1)
+    PLoginByPassportRes_uri int32   = (SVID_LOGIN << 16 | 2)
+    PLoginByUid_uri int32           = (SVID_LOGIN << 16 | 3)
+    PLoginByUidRes_uri int32        = (SVID_LOGIN << 16 | 4)
+    PLoginLogout_uri int32          = (SVID_LOGIN << 16 | 5)
+    PLoginLogoutRes_uri int32       = (SVID_LOGIN << 16 | 6)
+    PLoginPing_uri int32            = (SVID_LOGIN << 16 | 7)
+    PLoginPingRes_uri int32         = (SVID_LOGIN << 16 | 8)
+    PLoginKickOff_uri int32         = (SVID_LOGIN << 16 | 9)
 )
 
 var signal *test.SignalTester
 
-var ip_port = "123.56.88.196:9100"
-//var ip_port = "127.0.0.1:9100"
+//var ip_port = "123.56.88.196:9100"
+var ip_port = "127.0.0.1:9100"
 
 /*
  * 正常连接并登录(用户名密码方式)，然后ping三次后关掉连接
@@ -623,26 +632,26 @@ func failedToPing() {
 func sessProtoRegisterMessage() {
     fmt.Println("session_event RegisterMessage")
     // session.proto
-    socket.RegisterMessageMeta("session_event.SessionAccepted", (*sessproto.SessionAccepted)(nil), 348117910)
-    socket.RegisterMessageMeta("session_event.SessionAcceptFailed", (*sessproto.SessionAcceptFailed)(nil), 1978788392)
-    socket.RegisterMessageMeta("session_event.SessionConnected", (*sessproto.SessionConnected)(nil), 3543838007)
-    socket.RegisterMessageMeta("session_event.SessionConnectFailed", (*sessproto.SessionConnectFailed)(nil), 1720533237)
-    socket.RegisterMessageMeta("session_event.SessionClosed", (*sessproto.SessionClosed)(nil), 90181607)
-    socket.RegisterMessageMeta("session_event.SessionError", (*sessproto.SessionError)(nil), 1937281175)
+    socket.RegisterMessageMeta("session_event.SessionAccepted", (*sessproto.SessionAccepted)(nil), uint32(PSessionAccepted_uri))
+    socket.RegisterMessageMeta("session_event.SessionAcceptFailed", (*sessproto.SessionAcceptFailed)(nil), uint32(PSessionAcceptedFailed_uri))
+    socket.RegisterMessageMeta("session_event.SessionConnected", (*sessproto.SessionConnected)(nil), uint32(PSessionConnected_uri))
+    socket.RegisterMessageMeta("session_event.SessionConnectFailed", (*sessproto.SessionConnectFailed)(nil), uint32(PSessionConnectedFailed_uri))
+    socket.RegisterMessageMeta("session_event.SessionClosed", (*sessproto.SessionClosed)(nil), uint32(PSessionClosed_uri))
+    socket.RegisterMessageMeta("session_event.SessionError", (*sessproto.SessionError)(nil), uint32(PSessionError_uri))
 }
 
 func loginProtoRegisterMessage() {
     fmt.Println("login_event RegisterMessage")
     // login_event.proto
-    socket.RegisterMessageMeta("login_event.PLoginByPassport", (*loginproto.PLoginByPassport)(nil), 3176521479)
-    socket.RegisterMessageMeta("login_event.PLoginByPassportRes", (*loginproto.PLoginByPassportRes)(nil), 1894287111)
-    socket.RegisterMessageMeta("login_event.PLoginByToken", (*loginproto.PLoginByToken)(nil), 3676221678)
-    socket.RegisterMessageMeta("login_event.PLoginByTokenRes", (*loginproto.PLoginByTokenRes)(nil), 2978710459)
-    socket.RegisterMessageMeta("login_event.PLoginLogout", (*loginproto.PLoginLogout)(nil), 182945212)
-    socket.RegisterMessageMeta("login_event.PLoginLogoutRes", (*loginproto.PLoginLogoutRes)(nil), 3420227263)
-    socket.RegisterMessageMeta("login_event.PLoginPing", (*loginproto.PLoginPing)(nil), 1951739067)
-    socket.RegisterMessageMeta("login_event.PLoginPingRes", (*loginproto.PLoginPingRes)(nil), 3845948673)
-    socket.RegisterMessageMeta("login_event.PLoginKickOff", (*loginproto.PLoginKickOff)(nil), 4292429949)
+    socket.RegisterMessageMeta("login_event.PLoginByPassport", (*loginproto.PLoginByPassport)(nil), uint32(PLoginByPassport_uri))
+    socket.RegisterMessageMeta("login_event.PLoginByPassportRes", (*loginproto.PLoginByPassportRes)(nil), uint32(PLoginByPassportRes_uri))
+    socket.RegisterMessageMeta("login_event.PLoginByToken", (*loginproto.PLoginByToken)(nil), uint32(PLoginByUid_uri))
+    socket.RegisterMessageMeta("login_event.PLoginByTokenRes", (*loginproto.PLoginByTokenRes)(nil), uint32(PLoginByUidRes_uri))
+    socket.RegisterMessageMeta("login_event.PLoginLogout", (*loginproto.PLoginLogout)(nil), uint32(PLoginLogout_uri))
+    socket.RegisterMessageMeta("login_event.PLoginLogoutRes", (*loginproto.PLoginLogoutRes)(nil), uint32(PLoginLogoutRes_uri))
+    socket.RegisterMessageMeta("login_event.PLoginPing", (*loginproto.PLoginPing)(nil), uint32(PLoginPing_uri))
+    socket.RegisterMessageMeta("login_event.PLoginPingRes", (*loginproto.PLoginPingRes)(nil), uint32(PLoginPingRes_uri))
+    socket.RegisterMessageMeta("login_event.PLoginKickOff", (*loginproto.PLoginKickOff)(nil), uint32(PLoginKickOff_uri))
 }
 
 func TestLoginByPassportAndPing(t *testing.T) {
