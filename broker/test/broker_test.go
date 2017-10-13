@@ -4,9 +4,9 @@ import (
     "fmt"
     "time"
     "testing"
-
     sessproto "smartgo/proto/session_event"
     loginproto "smartgo/proto/login_event"
+    testproto "smartgo/proto/test_event"
     "smartgo/libs/utils"
     "smartgo/libs/socket"
     "smartgo/libs/socket/example"
@@ -23,6 +23,7 @@ const (
     //服务主ID
     SVID_SESION int32 = 1
     SVID_LOGIN  int32 = 16
+    SVID_TEST  int32 = 2
 
     //session服务子ID，这个仅内部使用
     PSessionAccepted_uri int32          = (SVID_SESION << 16 | 1)
@@ -42,6 +43,9 @@ const (
     PLoginPing_uri int32            = (SVID_LOGIN << 16 | 7)
     PLoginPingRes_uri int32         = (SVID_LOGIN << 16 | 8)
     PLoginKickOff_uri int32         = (SVID_LOGIN << 16 | 9)
+
+    //test。。。
+    PTestEchoACK_uri int32      = (SVID_TEST << 16 | 1)
 )
 
 var signal *test.SignalTester
@@ -360,8 +364,6 @@ func loginByTokenAndPing() {
     signal.WaitAndExpect(1, "TestConnActiveClose not connected")
     signal.WaitAndExpect(2, "TestConnActiveClose not logined")
     signal.WaitAndExpect(3, "TestConnActiveClose not close")
-
-    //queue.StopLoop(-1)
 }
 
 func noLoginAfterConnected() {
@@ -629,6 +631,179 @@ func failedToPing() {
     signal.WaitAndExpect(3, "TestConnActiveClose not closed")
 }
 
+func testDefaultHandler() {
+    queue := socket.NewEventQueue()
+    connector := socket.NewConnector(queue).Start(ip_port)
+
+    //ping三次就好了
+    ping_times := 0
+
+    //session message
+    socket.RegisterMessage(connector, "session_event.SessionAccepted", func(content interface{}, session socket.Session) {
+        _, ok := content.(*sessproto.SessionAccepted)
+        if !ok {
+            fmt.Println("Client: recv invalid SessionAccepted message")
+            return
+        }
+        fmt.Println("Client: recv SessionAccepted message")
+    })
+
+    socket.RegisterMessage(connector, "session_event.SessionAcceptFailed", func(content interface{}, session socket.Session) {
+        _, ok := content.(*sessproto.SessionAcceptFailed)
+        if !ok {
+            fmt.Println("Client: recv invalid SessionAcceptFailed message")
+            return
+        }
+        fmt.Println("Client: recv SessionAcceptFailed message")
+    })
+
+    socket.RegisterMessage(connector, "session_event.SessionConnected", func(content interface{}, session socket.Session) {
+        _, ok := content.(*sessproto.SessionConnected)
+        if !ok {
+            fmt.Println("Client: recv invalid SessionConnected message")
+            return
+        }
+        signal.Done(1)
+        fmt.Println("Client: recv SessionConnected message")
+        fmt.Println("Client: send PLoginByToken message")
+        connector.Session().SetParam("connected", true)
+        connector.Session().Send(&loginproto.PLoginByToken{
+            Uri:PLoginByUid_uri,
+            Uid:"1",
+            Token:"hello_liujia",
+            Deviceid:"abcdefg",
+            Devicetype:"test",
+            Params:map[string]string{"111":"222"},
+        })
+
+        connector.Session().Send(&testproto.TestEchoACK{
+            Content:"DEFAULT",
+        })
+    })
+
+    socket.RegisterMessage(connector, "session_event.SessionConnectFailed", func(content interface{}, session socket.Session) {
+        _, ok := content.(*sessproto.SessionConnectFailed)
+        if !ok {
+            fmt.Println("Client: recv invalid SessionConnectFailed message")
+            return
+        }
+        fmt.Println("Client: recv SessionConnectFailed message")
+    })
+
+    socket.RegisterMessage(connector, "session_event.SessionError", func(content interface{}, session socket.Session) {
+        _, ok := content.(*sessproto.SessionError)
+        if !ok {
+            fmt.Println("Client: recv invalid SessionError message")
+            return
+        }
+        fmt.Println("Client: recv SessionError message")
+    })
+
+    socket.RegisterMessage(connector, "session_event.SessionClosed", func(content interface{}, session socket.Session) {
+        _, ok := content.(*sessproto.SessionClosed)
+        if !ok {
+            fmt.Println("Client: recv invalid SessionClosed message")
+            return
+        }
+        fmt.Println("Client: recv SessionClosed message")
+
+        timer, ok := connector.Session().GetParam("pingtimer").(*socket.Timer)
+        if ok {
+            fmt.Println("Client: stop timer")
+            timer.Stop()
+        }
+
+        signal.Done(3)
+    })
+
+    //login message
+    socket.RegisterMessage(connector, "login_event.PLoginByPassportRes", func(content interface{}, session socket.Session) {
+        msg, ok := content.(*loginproto.PLoginByPassportRes)
+        if !ok {
+            fmt.Println("Client: recv invalid PLoginByPassportRes message")
+            return
+        }
+        if msg.Rescode == RES_OK {
+            signal.Done(2)
+            fmt.Println("Client: login by passport success, uid/token", msg.Uid, msg.Token)
+            uid := msg.Uid
+            token := msg.Token
+            connector.Session().SetParam("uid", uid)
+            connector.Session().SetParam("token", token)
+            timer := socket.NewTimer(queue, 1*time.Second, func(t *socket.Timer) {
+                fmt.Println("Client: timed to send ping", utils.GoID())
+                connector.Session().Send(&loginproto.PLoginPing{
+                    Uri:PLoginPing_uri,
+                    Uid:uid,
+                    Clientts:time.Now().UnixNano()/1000000,
+                })
+            })
+            connector.Session().SetParam("pingtimer", timer)
+        }else {
+            fmt.Println("Client: login failed", msg.Rescode)
+            connector.Session().SetParam("uid", "")
+            connector.Session().SetParam("token", "")
+            v := connector.Session().GetParam("pingtimer")
+            if timer, ok := v.(*socket.Timer);ok {
+                timer.Stop()
+            }
+        }
+    })
+
+    socket.RegisterMessage(connector, "login_event.PLoginByTokenRes", func(content interface{}, session socket.Session) {
+        msg, ok := content.(*loginproto.PLoginByTokenRes)
+        if !ok {
+            fmt.Println("Client: recv invalid PLoginByTokenRes message")
+            return
+        }
+        if msg.Rescode == RES_OK {
+            signal.Done(2)
+            fmt.Println("Client: login by token success, uid/token", msg.Uid, msg.Token)
+            uid := msg.Uid
+            token := msg.Token
+            connector.Session().SetParam("uid", uid)
+            connector.Session().SetParam("token", token)
+            timer := socket.NewTimer(queue, 1*time.Second, func(t *socket.Timer) {
+                fmt.Println("Client: timed to send ping", utils.GoID())
+                connector.Session().Send(&loginproto.PLoginPing{
+                    Uri:PLoginPing_uri,
+                    Uid:uid,
+                    Clientts:time.Now().UnixNano()/1000000,
+                })
+            })
+            connector.Session().SetParam("pingtimer", timer)
+        }else {
+            fmt.Println("Client: login failed", msg.Rescode)
+            connector.Session().SetParam("uid", "")
+            connector.Session().SetParam("token", "")
+            v := connector.Session().GetParam("pingtimer")
+            if timer, ok := v.(*socket.Timer);ok {
+                timer.Stop()
+            }
+        }
+    })
+
+    socket.RegisterMessage(connector, "login_event.PLoginPingRes", func(content interface{}, session socket.Session) {
+        msg, ok := content.(*loginproto.PLoginPingRes)
+        if !ok {
+            fmt.Println("Client: recv invalid PLoginByPassportRes message")
+            return
+        }
+        fmt.Println(msg)
+
+        ping_times++
+        if ping_times == 3 {
+            connector.Stop()
+        }
+    })
+
+    queue.StartLoop()
+
+    signal.WaitAndExpect(1, "TestConnActiveClose not connected")
+    signal.WaitAndExpect(2, "TestConnActiveClose not logined")
+    signal.WaitAndExpect(3, "TestConnActiveClose not close")
+}
+
 func sessProtoRegisterMessage() {
     fmt.Println("session_event RegisterMessage")
     // session.proto
@@ -653,6 +828,7 @@ func loginProtoRegisterMessage() {
     socket.RegisterMessageMeta("login_event.PLoginPingRes", (*loginproto.PLoginPingRes)(nil), uint32(PLoginPingRes_uri))
     socket.RegisterMessageMeta("login_event.PLoginKickOff", (*loginproto.PLoginKickOff)(nil), uint32(PLoginKickOff_uri))
 }
+
 
 func TestLoginByPassportAndPing(t *testing.T) {
     signal = test.NewSignalTesterTimeout(t, 10)
@@ -684,4 +860,17 @@ func TestFailedToPing(t *testing.T) {
     loginProtoRegisterMessage()
     socket.Init()
     failedToPing()
+}
+
+
+func TestDefaultHandler(t *testing.T) {
+    signal = test.NewSignalTesterTimeout(t, 10)
+    sessProtoRegisterMessage()
+    loginProtoRegisterMessage()
+    socket.Init()
+
+    //发送方必须注册此消息
+    socket.RegisterMessageMeta("test_event.TestEchoACK", (*testproto.TestEchoACK)(nil), uint32(PTestEchoACK_uri))
+
+    testDefaultHandler()
 }
