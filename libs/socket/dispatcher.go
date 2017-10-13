@@ -1,8 +1,11 @@
 package socket
 
 type EventDispatcher interface {
-	// 注册事件回调
+	//注册事件回调
 	AddCallback(id uint32, f func(interface{})) *CallbackContext
+
+	//注册默认处理
+	AddDefaultCallback(f func(interface{})) *CallbackContext
 
 	RemoveCallback(id uint32)
 
@@ -38,8 +41,9 @@ func NewEventDispatcher() EventDispatcher {
 
 type eventDispatcher struct {
 	//保证注册发生在初始化, 读取发生在之后可以不用锁，并且对一个msg，对应一堆handler
-	handlerByMsgPeer map[uint32][]*CallbackContext
-	inject func(interface{}) bool
+	handlerByMsgPeer 	map[uint32][]*CallbackContext
+	handlerDefault 		*CallbackContext
+	inject 				func(interface{}) bool
 }
 
 //注册事件回调
@@ -58,6 +62,15 @@ func (self *eventDispatcher) AddCallback(id uint32, f func(interface{})) *Callba
 	ctxList = append(ctxList, newCtx)
 	self.handlerByMsgPeer[id] = ctxList
 
+	return newCtx
+}
+
+func (self *eventDispatcher) AddDefaultCallback(f func(interface{})) *CallbackContext {
+	newCtx := &CallbackContext{
+		ID:   0,
+		Func: f,
+	}
+	self.handlerDefault = newCtx
 	return newCtx
 }
 
@@ -162,6 +175,10 @@ func (self *eventDispatcher) CallData(data interface{}) {
 			if ctxList, ok := self.handlerByMsgPeer[d.ContextID()]; ok {
 				for _, ctx := range ctxList {
 					ctx.Func(data)
+				}
+			}else {
+				if self.handlerDefault != nil {
+					self.handlerDefault.Func(d)
 				}
 			}
 		//直接回调

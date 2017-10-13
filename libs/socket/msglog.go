@@ -10,7 +10,6 @@ type MessageLogInfo struct {
 	Dir string
 	ses Session
 	pkt *Packet
-
 	meta *MessageMeta
 }
 
@@ -23,7 +22,6 @@ func (self *MessageLogInfo) SessionID() int64 {
 }
 
 func (self *MessageLogInfo) MsgName() string {
-
 	if self.meta == nil {
 		return ""
 	}

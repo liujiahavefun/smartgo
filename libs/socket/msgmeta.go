@@ -40,8 +40,8 @@ func MessageMetaByName(name string) *MessageMeta {
 	return nil
 }
 
-//消息全名，类似gamedef.TestEchoACK，rtype.PkgPath()返回完整package名字类似cellnet/proto/gamedef，path.Base()后变为gamedef
-//所以这里要求注册时都要用gamedef.TestEchoACK这种形式？
+//消息全名，类似testproto.TestEchoACK(报名和类型名)，rtype.PkgPath()返回完整package名字类似smartgo/proto/testproto，path.Base()后变为testproto
+//所以这里要求注册时都要用testproto.TestEchoACK这种形式？
 func MessageFullName(rtype reflect.Type) string {
 	if rtype.Kind() == reflect.Ptr {
 		rtype = rtype.Elem()

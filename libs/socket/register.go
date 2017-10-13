@@ -14,7 +14,9 @@ func MessageRegisteredCount(evd EventDispatcher, msgName string) int {
 	return evd.CountByID(msgMeta.ID)
 }
 
-//注册连接消息
+/*
+ * 注册消息处理逻辑
+ */
 func RegisterMessage(evd EventDispatcher, msgName string, userHandler func(interface{}, Session)) *RegisterMessageContext {
 	msgMeta := MessageMetaByName(msgName)
 	if msgMeta == nil {
@@ -35,4 +37,17 @@ func RegisterMessage(evd EventDispatcher, msgName string, userHandler func(inter
 	})
 
 	return &RegisterMessageContext{MessageMeta: msgMeta, CallbackContext: ctx}
+}
+
+/*
+ * 注册默认消息处理逻辑，即如果此消息未被RegisterMessage所注册，都用此回调处理
+ */
+func RegisterDefault(evd EventDispatcher, defaultHandler func(uint32, []byte, Session)) *RegisterMessageContext {
+	ctx := evd.AddDefaultCallback(func(data interface{}) {
+		if ev, ok := data.(*SessionEvent); ok {
+			defaultHandler(ev.Packet.MsgID, ev.Packet.Data, ev.Ses)
+		}
+	})
+
+	return &RegisterMessageContext{MessageMeta: nil, CallbackContext: ctx}
 }

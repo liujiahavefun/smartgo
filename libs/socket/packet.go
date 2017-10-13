@@ -40,12 +40,11 @@ func BuildPacket(data interface{}) (*Packet, *MessageMeta) {
 
 //封包到消息
 //根据msgType，去掉ptr，New出对应的reflect.Value的"零值"的pointer(类型是reflect.Value)，Interface()返回reflect.Value对应的interface
-//说了一堆，就是根据msgType，返回一个空的具体的proto.Message对象，例如传入的msgType是gamedef.TestEchoACK，
-//则rawMsg就是一个interface，底层类型就是对应的TestEchoACK的proto.TestEchoACK
+//说了一堆，就是根据msgType，返回一个空的具体的proto.Message对象，例如传入的msgType是testproto.TestEchoACK，
+//则rawMsg就是一个interface，底层类型就是对应的TestEchoACK的testproto.TestEchoACK
 func ParsePacket(pkt *Packet, msgType reflect.Type) (interface{}, error) {
 	//msgType为ptr类型, new时需要非ptr型
 	rawMsg := reflect.New(msgType.Elem()).Interface()
-
 	err := proto.Unmarshal(pkt.Data, rawMsg.(proto.Message))
 	if err != nil {
 		return nil, err
