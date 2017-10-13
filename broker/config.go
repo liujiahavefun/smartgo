@@ -11,11 +11,13 @@ type BrokerConfig struct {
 	ListenOn          string
 	LogFile           string
 	RouterServerList  []string
+	Timeout4Login	  int
 }
 
 func NewBrokerConfig(configFile string) *BrokerConfig {
 	return &BrokerConfig{
 		configFile: configFile,
+		Timeout4Login: 5,
 	}
 }
 

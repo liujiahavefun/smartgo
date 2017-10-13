@@ -12,6 +12,7 @@ import (
 var (
 	BUILD_VERSION string
 	BUILD_TIME    string
+	gBrokerConfig *BrokerConfig
 )
 
 var configFile = flag.String("config_file", "broker.conf", "input broker config file name")
@@ -36,8 +37,8 @@ func main() {
 	initLogger()
 
 	//load config
-	cfg := NewBrokerConfig(*configFile)
-	err := cfg.LoadConfig()
+	gBrokerConfig := NewBrokerConfig(*configFile)
+	err := gBrokerConfig.LoadConfig()
 	if err != nil {
 		logErrorf(err.Error())
 		panic("failed to load config")
@@ -48,8 +49,8 @@ func main() {
 
 	//start server
 	go func() {
-		logInfo("to start broker server", cfg.ListenOn)
-		start(cfg.ListenOn)
+		logInfo("to start broker server", gBrokerConfig.ListenOn)
+		start(gBrokerConfig.ListenOn)
 	}()
 
 	//进程收到的退出信号

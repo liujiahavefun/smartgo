@@ -43,7 +43,7 @@ func handleSessionClosed(msg *sessproto.SessionClosed, session socket.Session)  
 
 func addLoginCheckTask(session socket.Session) {
     logInfo("Server: to add login check timer")
-    socket.NewTimer(gEventQueue, 1*time.Second, func(t *socket.Timer) {
+    socket.NewTimer(gEventQueue, time.Duration(gBrokerConfig.Timeout4Login)*time.Second, func(t *socket.Timer) {
         logInfo("login timer check")
         t.Stop()
         if logined, err := getSessionParamAsBool(session, SESSION_LOGINED); err != nil || logined == false {
