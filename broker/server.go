@@ -162,5 +162,9 @@ func runServer(address string) {
         handleLoginPing(msg, session)
     })
 
+    socket.RegisterDefault(gServer, func(msgId uint32, data []byte, session socket.Session) {
+        logInfo("Server: recv unregistered message, id", msgId, "len", len(data))
+    })
+
     gEventQueue.StartLoop()
 }
