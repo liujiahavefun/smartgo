@@ -2,18 +2,19 @@ package socket
 
 import (
 	"time"
+	"sync"
 )
 
 type Timer struct {
 	tick 		*time.Ticker
 	donechan 	chan struct{}
-	done        *AtomicBoolean
+	done        sync.Once
 }
 
 func (self *Timer) Stop() {
-	if self.done.CompareAndSet(false, true) == false {
+	self.done.Do(func() {
 		self.donechan <- struct{}{}
-	}
+	})
 }
 
 func NewTimer(eq EventQueue, dur time.Duration, callback func(*Timer)) *Timer {
@@ -27,7 +28,6 @@ func NewTimer2(evd EventDispatcher, eq EventQueue, dur time.Duration, callback f
 	self := &Timer{
 		tick: time.NewTicker(dur),
 		donechan: make(chan struct{}),
-		done: NewAtomicBoolean(false),
 	}
 
 	go func() {
