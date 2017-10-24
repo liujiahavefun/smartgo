@@ -127,7 +127,7 @@ func (self *TcpServer) onSessionErrorFunc(sess Session, err error) {
 }
 
 func (self *TcpServer) onSessionRecvPacketFunc(sess Session, packet *Packet) {
-	//fmt.Println("liujia, tcp_server onSessionRecvPacketFunc: ", session, packet)
+	//fmt.Printf("onSessionRecvPacketFunc: recv packet, id:%v, data:%v\n", packet.MsgID, string(packet.Data))
 	msgLog("recv", sess, packet)
 	self.evq.Post(self, &SessionEvent{
 		Packet: packet,

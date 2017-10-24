@@ -125,10 +125,10 @@ func (self * SessionMgr) getLoginedSession(key string) (session socket.Session, 
 
 func addPingCheckTask(session socket.Session) {
     logInfo("Server: to add ping check timer")
-    timer := socket.NewTimer(gEventQueue, 2*time.Second, func(t *socket.Timer) {
+    timer := socket.NewTimer(gEventQueue, 15*time.Second, func(t *socket.Timer) {
         logInfo("ping timer check")
-        if last_ping_time, err := getSessionParamAsInt64(session, SESSION_LAST_PING_TIME);err != nil || utils.CurrentTimeMillSecond() - last_ping_time > 1*1000 {
-            logWarning("Ping timeout, last ping is ", last_ping_time)
+        if last_ping_time, err := getSessionParamAsInt64(session, SESSION_LAST_PING_TIME); err != nil || utils.CurrentTimeMillSecond() - last_ping_time > 30*1000 {
+            logWarningf("Ping timeout, last ping is %v, to close session", utils.Time2String(last_ping_time))
             session.Close()
         }
     })
